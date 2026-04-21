@@ -1,0 +1,165 @@
+.notificationBell {
+    position: relative;
+}
+
+.bellButton {
+    position: relative;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-700);
+    transition: var(--transition);
+    border-radius: var(--radius);
+}
+
+.bellButton:hover {
+    background: var(--gray-100);
+    color: var(--primary);
+}
+
+.badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--error);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-full);
+    min-width: 18px;
+    text-align: center;
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 360px;
+    max-height: 500px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdownHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.dropdownHeader h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.markAllBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.625rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.markAllBtn:hover {
+    background: var(--gray-50);
+}
+
+.notificationList {
+    overflow-y: auto;
+    max-height: 420px;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2xl);
+    gap: var(--spacing-md);
+    color: var(--gray-500);
+}
+
+.emptyState p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.notificationItem {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.notificationItem:hover {
+    background: var(--gray-50);
+}
+
+.notificationItem:last-child {
+    border-bottom: none;
+}
+
+.unread {
+    background: #eff6ff;
+}
+
+.unread:hover {
+    background: #dbeafe;
+}
+
+.notificationContent {
+    flex: 1;
+}
+
+.message {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.time {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.unreadDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+    margin-top: 0.375rem;
+}
