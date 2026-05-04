@@ -106,7 +106,7 @@ const Login = () => {
 
                     <button
                         type="submit"
-                        className="btn btn-primary login-btn"
+                        className={`btn btn-primary ${styles.loginBtn}`}
                         disabled={loading}
                         style={{ width: '100%' }}
                     >

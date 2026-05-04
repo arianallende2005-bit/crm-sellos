@@ -46,6 +46,7 @@ const OrderManagement = () => {
             if (searchTerm) params.search = searchTerm;
             if (filter === 'archived') params.show_archived = 'true';
             else if (filter === 'active') params.show_archived = 'false';
+            else if (filter === 'all') params.show_archived = 'all';
 
             const response = await ordersAPI.getAll(params);
             if (response.data.success) {

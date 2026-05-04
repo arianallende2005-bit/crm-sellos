@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usersAPI } from '../services/api';
-import { FiArrowLeft, FiUserPlus, FiEdit2, FiKey, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
+import { FiArrowLeft, FiUserPlus, FiEdit2, FiKey, FiToggleLeft, FiToggleRight, FiTrash2 } from 'react-icons/fi';
 import styles from './ClientManagement.module.css';
 
 const ClientManagement = () => {
@@ -17,6 +17,9 @@ const ClientManagement = () => {
         full_name: ''
     });
     const [generatedPassword, setGeneratedPassword] = useState('');
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordClientId, setPasswordClientId] = useState(null);
+    const [newPasswordInput, setNewPasswordInput] = useState('');
 
     useEffect(() => {
         fetchClients();
@@ -57,14 +60,25 @@ const ClientManagement = () => {
         }
     };
 
-    const handleResetPassword = async (clientId) => {
-        if (!window.confirm('¿Está seguro de restablecer la contraseña?')) return;
+    const openPasswordModal = (clientId) => {
+        setPasswordClientId(clientId);
+        setNewPasswordInput('');
+        setShowPasswordModal(true);
+    };
 
+    const submitNewPassword = async (e) => {
+        e.preventDefault();
         try {
-            const response = await usersAPI.resetPassword(clientId);
-            alert(`Nueva contraseña: ${response.data.temporaryPassword}\n\nPor favor, guárdela y entréguese al cliente.`);
+            const response = await usersAPI.resetPassword(passwordClientId, newPasswordInput || undefined);
+            
+            if (response.data.temporaryPassword) {
+                alert(`Nueva contraseña generada: ${response.data.temporaryPassword}\n\nPor favor, guárdela y entréguese al cliente.`);
+            } else {
+                alert('Contraseña actualizada exitosamente.');
+            }
+            setShowPasswordModal(false);
         } catch (error) {
-            alert('Error al restablecer contraseña');
+            alert(error.response?.data?.message || 'Error al restablecer contraseña');
         }
     };
 
@@ -74,6 +88,20 @@ const ClientManagement = () => {
             fetchClients();
         } catch (error) {
             alert('Error al cambiar estado del cliente');
+        }
+    };
+
+    const handleDeleteClient = async (clientId) => {
+        if (!window.confirm('¿Está seguro de eliminar este cliente? Se eliminarán también todos sus pedidos y notificaciones. Esta acción NO se puede deshacer.')) return;
+        
+        try {
+            const response = await usersAPI.delete(clientId);
+            if (response.data.success) {
+                alert('Cliente eliminado exitosamente.');
+                fetchClients();
+            }
+        } catch (error) {
+            alert(error.response?.data?.message || 'Error al eliminar cliente');
         }
     };
 
@@ -149,9 +177,9 @@ const ClientManagement = () => {
                                                 <FiEdit2 size={16} />
                                             </button>
                                             <button
-                                                onClick={() => handleResetPassword(client.id)}
+                                                onClick={() => openPasswordModal(client.id)}
                                                 className={styles.actionBtn}
-                                                title="Restablecer contraseña"
+                                                title="Cambiar contraseña"
                                             >
                                                 <FiKey size={16} />
                                             </button>
@@ -161,6 +189,14 @@ const ClientManagement = () => {
                                                 title={client.is_active ? 'Desactivar' : 'Activar'}
                                             >
                                                 {client.is_active ? <FiToggleRight size={16} /> : <FiToggleLeft size={16} />}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteClient(client.id)}
+                                                className={styles.actionBtn}
+                                                title="Eliminar cliente"
+                                                style={{ color: '#dc2626' }}
+                                            >
+                                                <FiTrash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -245,6 +281,38 @@ const ClientManagement = () => {
                                 </button>
                                 <button type="submit" className="btn btn-primary">
                                     {editingClient ? 'Actualizar' : 'Crear Cliente'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Password Modal */}
+            {showPasswordModal && (
+                <div className={styles.modal} onClick={() => setShowPasswordModal(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <h2>Cambiar Contraseña</h2>
+                        <p style={{ marginBottom: '1rem', color: '#666' }}>
+                            Ingrese una nueva contraseña para el cliente, o deje en blanco para generar una aleatoria segura.
+                        </p>
+                        <form onSubmit={submitNewPassword} className={styles.form}>
+                            <div>
+                                <label className="label">Nueva Contraseña (opcional)</label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    value={newPasswordInput}
+                                    onChange={e => setNewPasswordInput(e.target.value)}
+                                    placeholder="Dejar vacío para aleatoria"
+                                />
+                            </div>
+                            <div className={styles.modalActions}>
+                                <button type="button" onClick={() => setShowPasswordModal(false)} className="btn btn-secondary">
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    Actualizar Contraseña
                                 </button>
                             </div>
                         </form>

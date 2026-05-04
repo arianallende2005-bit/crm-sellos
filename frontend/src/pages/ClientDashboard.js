@@ -29,7 +29,7 @@ const ClientDashboard = () => {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const response = await ordersAPI.getAll({});
+            const response = await ordersAPI.getAll({ show_archived: 'all' });
             if (response.data.success) {
                 setOrders(response.data.orders);
             }

@@ -43,7 +43,10 @@ const getAllOrders = async (req, res) => {
         // Filter by archived status
         if (show_archived === 'true') {
             query += ` AND o.is_archived = true`;
-        } else if (show_archived === 'false' || !show_archived) {
+        } else if (show_archived === 'all') {
+            // Do not filter by is_archived, return both active and archived
+        } else {
+            // Default to active only if not specified or explicit 'false'
             query += ` AND o.is_archived = false`;
         }
 
@@ -274,7 +277,7 @@ const updateOrderStatus = async (req, res) => {
             `UPDATE orders 
        ${setQuery}
        WHERE id = $2
-       RETURNING *, (SELECT client_id FROM orders WHERE id = $2) as client_id`,
+       RETURNING *`,
             queryParams
         );
 

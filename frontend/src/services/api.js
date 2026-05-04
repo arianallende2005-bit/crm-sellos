@@ -56,6 +56,7 @@ export const usersAPI = {
     toggleActive: (id) => api.put(`/users/${id}/toggle-active`),
     changeOwnPassword: (currentPassword, newPassword) =>
         api.put('/users/me/password', { currentPassword, newPassword }),
+    delete: (id) => api.delete(`/users/${id}`),
 };
 
 // Orders API

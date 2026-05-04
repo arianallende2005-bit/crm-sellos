@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/database');
 const { saltRounds } = require('../config/auth');
+const path = require('path');
+const { deleteImage } = require('../utils/imageProcessor');
 
 /**
  * Get all users (clients only, admin excluded)
@@ -264,11 +266,72 @@ function generateRandomPassword(length = 12) {
     return password;
 }
 
+/**
+ * Delete user (client) and associated images
+ * DELETE /api/users/:id
+ */
+const deleteUser = async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const { id } = req.params;
+
+        // Check if user exists and is a client
+        const userCheck = await client.query('SELECT id FROM users WHERE id = $1 AND role = $2', [id, 'cliente']);
+        if (userCheck.rows.length === 0) {
+            client.release();
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado.'
+            });
+        }
+
+        await client.query('BEGIN');
+
+        // Fetch all order images for this user to delete them from filesystem
+        const ordersResult = await client.query('SELECT image_url FROM orders WHERE client_id = $1 AND image_url IS NOT NULL', [id]);
+        
+        // Delete user (cascade will handle orders, order_history, notifications in DB)
+        await client.query('DELETE FROM users WHERE id = $1 AND role = $2', [id, 'cliente']);
+
+        await client.query('COMMIT');
+
+        // Delete images from filesystem
+        for (const row of ordersResult.rows) {
+            if (row.image_url) {
+                const absolutePath = path.join(process.cwd(), row.image_url);
+                deleteImage(absolutePath);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Cliente eliminado exitosamente.'
+        });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Delete user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar usuario.'
+        });
+    } finally {
+        if (client) {
+            try {
+                client.release();
+            } catch (e) {
+                console.error('Error releasing client', e);
+            }
+        }
+    }
+};
+
 module.exports = {
     getAllUsers,
     createUser,
     updateUser,
     resetPassword,
     changeOwnPassword,
-    toggleUserActive
+    toggleUserActive,
+    deleteUser
 };
