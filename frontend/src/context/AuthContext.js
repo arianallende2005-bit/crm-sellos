@@ -33,6 +33,9 @@ export const AuthProvider = ({ children }) => {
             const response = await authAPI.login({ username, password });
 
             if (response.data.success) {
+                if (response.data.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
                 setUser(response.data.user);
                 return { success: true, user: response.data.user };
             }
@@ -51,6 +54,7 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
             console.error('Logout error:', err);
         } finally {
+            localStorage.removeItem('token');
             setUser(null);
             window.location.href = '/login';
         }
