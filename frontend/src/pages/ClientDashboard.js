@@ -163,7 +163,6 @@ const ClientDashboard = () => {
                                     <div className={styles.orderInfo}>
                                         <div className={styles.orderHeader}>
                                             <h3>{order.product_name}</h3>
-                                            <span className={styles.orderId}>#{order.id}</span>
                                         </div>
                                         {order.nro_remito && (
                                             <p className={styles.nroRemito}><strong>Nro. Remito:</strong> {order.nro_remito}</p>
@@ -187,7 +186,6 @@ const ClientDashboard = () => {
                         <div className={styles.modalHeader}>
                             <div>
                                 <h2>{selectedOrder.product_name}</h2>
-                                <p className={styles.modalSubtitle}>Pedido #{selectedOrder.id}</p>
                             </div>
                             <button onClick={() => setSelectedOrder(null)} className={styles.closeBtn}>×</button>
                         </div>
