@@ -39,6 +39,7 @@ CREATE TABLE orders (
   client_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   product_name VARCHAR(200) NOT NULL,
   image_url VARCHAR(500), -- Path to uploaded image
+  nro_remito VARCHAR(50), -- Remittance number / Tracking number
   current_status order_status NOT NULL DEFAULT 'diseno_realizado',
   is_archived BOOLEAN DEFAULT false,
   archived_date TIMESTAMP, -- When order was archived
@@ -98,7 +99,7 @@ CREATE TRIGGER update_orders_updated_at
 -- Password: cambiarme123 (hashed with bcrypt, 10 rounds)
 INSERT INTO users (username, password, email, full_name, role, is_active)
 VALUES (
-  'admin',
+  'centralgrafica',
   '$2b$10$rK8qF5xN.mYXJK5vN5YGOuXxLxJxN5Xx5xX5Xx5Xx5Xx5Xx5Xx5Xx',
   'admin@crm-sellos.com',
   'Administrador del Sistema',

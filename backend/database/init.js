@@ -32,7 +32,7 @@ async function initializeDatabase() {
 
         console.log('✅ Database schema created successfully');
         console.log('✅ Default admin user created');
-        console.log('   Username: admin');
+        console.log('   Username: centralgrafica');
         console.log('   Password: cambiarme123');
         console.log('   ⚠️  Please change this password immediately!');
 
