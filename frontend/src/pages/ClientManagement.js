@@ -145,7 +145,6 @@ const ClientManagement = () => {
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Usuario</th>
                                 <th>Nombre Completo</th>
                                 <th>Email</th>
@@ -157,7 +156,6 @@ const ClientManagement = () => {
                         <tbody>
                             {clients.map(client => (
                                 <tr key={client.id}>
-                                    <td>#{client.id}</td>
                                     <td><strong>{client.username}</strong></td>
                                     <td>{client.full_name}</td>
                                     <td>{client.email}</td>

@@ -265,7 +265,6 @@ const AdminDashboard = () => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>#</th>
                                     <th>Producto</th>
                                     <th>Cliente</th>
                                     <th>Estado</th>
@@ -275,7 +274,6 @@ const AdminDashboard = () => {
                             <tbody>
                                 {stats?.recentOrders.map(order => (
                                     <tr key={order.id}>
-                                        <td>#{order.id}</td>
                                         <td>{order.product_name}</td>
                                         <td>{order.client_name}</td>
                                         <td>

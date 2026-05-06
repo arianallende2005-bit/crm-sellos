@@ -249,7 +249,6 @@ const OrderManagement = () => {
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Producto</th>
                                 <th>Cliente</th>
                                 <th>Estado</th>
@@ -261,7 +260,6 @@ const OrderManagement = () => {
                         <tbody>
                             {orders.map(order => (
                                 <tr key={order.id}>
-                                    <td>#{order.id}</td>
                                     <td><strong>{order.product_name}</strong></td>
                                     <td>{order.client_name}</td>
                                     <td><StatusBadge status={order.current_status} /></td>
