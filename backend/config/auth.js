@@ -9,7 +9,7 @@ module.exports = {
     cookieOptions: {
         httpOnly: true, // Prevents client-side JavaScript access
         secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-        sameSite: 'strict', // CSRF protection
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-site cookies in production
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     },
 

@@ -93,7 +93,7 @@ const login = async (req, res) => {
  * POST /api/auth/logout
  */
 const logout = (req, res) => {
-    res.clearCookie('token');
+    res.clearCookie('token', cookieOptions);
     res.json({
         success: true,
         message: 'Sesión cerrada exitosamente.'
