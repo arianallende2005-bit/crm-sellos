@@ -18,7 +18,7 @@
     left: -10px;
     right: -10px;
     bottom: -10px;
-    background-image: url('/fondo-header.jpg');
+    background-image: url('./fondo-header.jpg');
     background-size: cover;
     background-position: center;
     filter: blur(8px);
