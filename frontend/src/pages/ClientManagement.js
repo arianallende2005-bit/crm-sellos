@@ -13,7 +13,6 @@ const ClientManagement = () => {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
-        email: '',
         full_name: ''
     });
     const [generatedPassword, setGeneratedPassword] = useState('');
@@ -109,7 +108,6 @@ const ClientManagement = () => {
         setEditingClient(client);
         setFormData({
             username: client.username,
-            email: client.email,
             full_name: client.full_name,
             password: ''
         });
@@ -120,7 +118,7 @@ const ClientManagement = () => {
         setShowModal(false);
         setEditingClient(null);
         setGeneratedPassword('');
-        setFormData({ username: '', password: '', email: '', full_name: '' });
+        setFormData({ username: '', password: '', full_name: '' });
     };
 
     return (
@@ -147,7 +145,6 @@ const ClientManagement = () => {
                             <tr>
                                 <th>Usuario</th>
                                 <th>Nombre Completo</th>
-                                <th>Email</th>
                                 <th>Estado</th>
                                 <th>Fecha Creación</th>
                                 <th>Acciones</th>
@@ -158,7 +155,6 @@ const ClientManagement = () => {
                                 <tr key={client.id}>
                                     <td><strong>{client.username}</strong></td>
                                     <td>{client.full_name}</td>
-                                    <td>{client.email}</td>
                                     <td>
                                         <span className={`${styles.badge} ${client.is_active ? styles.active : styles.inactive}`}>
                                             {client.is_active ? 'Activo' : 'Inactivo'}
@@ -245,17 +241,6 @@ const ClientManagement = () => {
                                     className="input"
                                     value={formData.full_name}
                                     onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label">Email*</label>
-                                <input
-                                    type="email"
-                                    className="input"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     required
                                 />
                             </div>
