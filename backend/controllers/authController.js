@@ -21,7 +21,7 @@ const login = async (req, res) => {
 
         // Find user by username
         const result = await pool.query(
-            'SELECT id, username, password, email, full_name, role, is_active FROM users WHERE username = $1',
+            'SELECT id, username, password, full_name, role, is_active FROM users WHERE username = $1',
             [username]
         );
 
@@ -74,7 +74,6 @@ const login = async (req, res) => {
             user: {
                 id: user.id,
                 username: user.username,
-                email: user.email,
                 full_name: user.full_name,
                 role: user.role
             }
@@ -108,7 +107,7 @@ const logout = (req, res) => {
 const getCurrentUser = async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT id, username, email, full_name, role, is_active FROM users WHERE id = $1',
+            'SELECT id, username, full_name, role, is_active FROM users WHERE id = $1',
             [req.user.id]
         );
 
