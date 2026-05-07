@@ -151,12 +151,11 @@ const OrderManagement = () => {
         const doc = new jsPDF();
         doc.text("Lista de Pedidos", 14, 15);
 
-        const tableColumn = ["ID", "Producto", "Cliente", "Estado", "Nro. Remito", "Fecha"];
+        const tableColumn = ["Producto", "Cliente", "Estado", "Nro. Remito", "Fecha"];
         const tableRows = [];
 
         orders.forEach(order => {
             const orderData = [
-                order.id,
                 order.product_name,
                 order.client_name,
                 order.current_status,
