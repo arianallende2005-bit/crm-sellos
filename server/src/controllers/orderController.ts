@@ -114,7 +114,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Invalid status' });
         }
 
-        const updatedOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const updatedOrder = await prisma.$transaction(async (tx) => {
             const order = await tx.order.update({
                 where: { id: parseInt(id as string) },
                 data: {
