@@ -1,20 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api/axios';
 
 interface User {
     id: number;
     username: string;
-    role: 'admin' | 'cliente';
+    role: string;
     fullName: string;
 }
 
 interface AuthContextType {
     user: User | null;
     token: string | null;
-    login: (token: string, user: User) => void;
-    logout: () => void;
     isAuthenticated: boolean;
     isLoading: boolean;
+    login: (userData: User, token: string) => void;
+    logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,35 +21,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('token'));
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const savedUser = localStorage.getItem('user');
-        if (token && savedUser) {
-            setUser(JSON.parse(savedUser));
-            // El interceptor en api.ts maneja el token automáticamente
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+
+        if (storedUser && storedToken) {
+            setUser(JSON.parse(storedUser));
+            setToken(storedToken);
+            setIsAuthenticated(true);
         }
         setIsLoading(false);
-    }, [token]);
+    }, []);
 
-    const login = (newToken: string, newUser: User) => {
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(newUser));
-        setToken(newToken);
-        setUser(newUser);
-        // El interceptor en api.ts maneja el token automáticamente
+    const login = (userData: User, userToken: string) => {
+        setUser(userData);
+        setToken(userToken);
+        setIsAuthenticated(true);
+        localStorage.setItem('token', userToken);
+        localStorage.setItem('user', JSON.stringify(userData));
     };
 
     const logout = () => {
+        setUser(null);
+        setToken(null);
+        setIsAuthenticated(false);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
-        // El interceptor en api.ts maneja el token automáticamente
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>
+        <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
