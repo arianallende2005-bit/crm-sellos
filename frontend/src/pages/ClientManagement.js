@@ -1,284 +1,264 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { usersAPI } from '../services/api';
-import { FiArrowLeft, FiUserPlus, FiEdit2, FiKey, FiToggleLeft, FiToggleRight, FiTrash2 } from 'react-icons/fi';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import styles from './ClientManagement.module.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const ClientManagement = () => {
-    const navigate = useNavigate();
+    const { token } = useAuth();
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
+    const [selectedClient, setSelectedClient] = useState(null);
     const [formData, setFormData] = useState({
         username: '',
-        password: '',
-        email: '',
-        full_name: ''
+        full_name: '',
+        password: ''
     });
-    const [generatedPassword, setGeneratedPassword] = useState('');
-    const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [passwordClientId, setPasswordClientId] = useState(null);
-    const [newPasswordInput, setNewPasswordInput] = useState('');
+    const [passwordData, setPasswordData] = useState({ password: '' });
+    const [saving, setSaving] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
-    useEffect(() => {
-        fetchClients();
-    }, []);
-
-    const fetchClients = async () => {
+    const fetchClients = useCallback(async () => {
         try {
-            const response = await usersAPI.getAll();
-            if (response.data.success) {
-                setClients(response.data.users);
+            setLoading(true);
+            const response = await fetch(`${API_URL}/api/users`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success) {
+                setClients(data.users);
             }
-        } catch (error) {
-            console.error('Error fetching clients:', error);
+        } catch (err) {
+            setError('Error al cargar clientes.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [token]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    useEffect(() => {
+        fetchClients();
+    }, [fetchClients]);
 
-        try {
-            if (editingClient) {
-                await usersAPI.update(editingClient.id, formData);
-                alert('Cliente actualizado exitosamente');
-            } else {
-                const response = await usersAPI.create(formData);
-                if (response.data.temporaryPassword) {
-                    setGeneratedPassword(response.data.temporaryPassword);
-                }
-                alert('Cliente creado exitosamente');
-            }
-
-            fetchClients();
-            closeModal();
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error al guardar cliente');
-        }
-    };
-
-    const openPasswordModal = (clientId) => {
-        setPasswordClientId(clientId);
-        setNewPasswordInput('');
-        setShowPasswordModal(true);
-    };
-
-    const submitNewPassword = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await usersAPI.resetPassword(passwordClientId, newPasswordInput || undefined);
-            
-            if (response.data.temporaryPassword) {
-                alert(`Nueva contraseña generada: ${response.data.temporaryPassword}\n\nPor favor, guárdela y entréguese al cliente.`);
-            } else {
-                alert('Contraseña actualizada exitosamente.');
-            }
-            setShowPasswordModal(false);
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error al restablecer contraseña');
-        }
-    };
-
-    const handleToggleActive = async (clientId) => {
-        try {
-            await usersAPI.toggleActive(clientId);
-            fetchClients();
-        } catch (error) {
-            alert('Error al cambiar estado del cliente');
-        }
-    };
-
-    const handleDeleteClient = async (clientId) => {
-        if (!window.confirm('¿Está seguro de eliminar este cliente? Se eliminarán también todos sus pedidos y notificaciones. Esta acción NO se puede deshacer.')) return;
-        
-        try {
-            const response = await usersAPI.delete(clientId);
-            if (response.data.success) {
-                alert('Cliente eliminado exitosamente.');
-                fetchClients();
-            }
-        } catch (error) {
-            alert(error.response?.data?.message || 'Error al eliminar cliente');
-        }
+    const openCreateModal = () => {
+        setEditingClient(null);
+        setFormData({ username: '', full_name: '', password: '' });
+        setShowModal(true);
     };
 
     const openEditModal = (client) => {
         setEditingClient(client);
         setFormData({
             username: client.username,
-            email: client.email,
-            full_name: client.full_name,
+            full_name: client.full_name || '',
             password: ''
         });
         setShowModal(true);
     };
 
-    const closeModal = () => {
-        setShowModal(false);
-        setEditingClient(null);
-        setGeneratedPassword('');
-        setFormData({ username: '', password: '', email: '', full_name: '' });
+    const openPasswordModal = (client) => {
+        setSelectedClient(client);
+        setPasswordData({ password: '' });
+        setShowPasswordModal(true);
     };
 
-    return (
-        <div className={styles.page}>
-            <div className={styles.container}>
-                <div className={styles.header}>
-                    <button onClick={() => navigate('/admin/dashboard')} className="btn btn-secondary">
-                        <FiArrowLeft size={18} />
-                        Volver
-                    </button>
-                    <h1>Gestión de Clientes</h1>
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="btn btn-primary"
-                    >
-                        <FiUserPlus size={18} />
-                        Nuevo Cliente
-                    </button>
-                </div>
+    const handleFormChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
+    const handleSaveClient = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setError('');
+        try {
+            const url = editingClient
+                ? `${API_URL}/api/users/${editingClient.id}`
+                : `${API_URL}/api/users`;
+            const method = editingClient ? 'PUT' : 'POST';
+
+            const body = {
+                username: formData.username,
+                full_name: formData.full_name,
+            };
+            if (!editingClient && formData.password) {
+                body.password = formData.password;
+            }
+
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            if (data.success) {
+                setShowModal(false);
+                fetchClients();
+                setSuccessMessage(editingClient ? 'Cliente actualizado.' : `Cliente creado. ${data.temporaryPassword ? `Contraseña temporal: ${data.temporaryPassword}` : ''}`);
+                setTimeout(() => setSuccessMessage(''), 6000);
+            } else {
+                setError(data.message || 'Error al guardar.');
+            }
+        } catch (err) {
+            setError('Error de conexión.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const response = await fetch(`${API_URL}/api/users/${selectedClient.id}/password`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ password: passwordData.password || undefined })
+            });
+            const data = await response.json();
+            if (data.success) {
+                setShowPasswordModal(false);
+                setSuccessMessage(`Contraseña restablecida. ${data.temporaryPassword ? `Nueva contraseña: ${data.temporaryPassword}` : ''}`);
+                setTimeout(() => setSuccessMessage(''), 6000);
+            } else {
+                setError(data.message || 'Error al restablecer contraseña.');
+            }
+        } catch (err) {
+            setError('Error de conexión.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleToggleActive = async (client) => {
+        try {
+            const response = await fetch(`${API_URL}/api/users/${client.id}/toggle-active`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success) {
+                fetchClients();
+            }
+        } catch (err) {
+            setError('Error al cambiar estado.');
+        }
+    };
+
+    if (loading) return <div className={styles.loading}>Cargando clientes...</div>;
+
+    return (
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h1>Gestión de Clientes</h1>
+                <button className={styles.btnPrimary} onClick={openCreateModal}>
+                    + Nuevo Cliente
+                </button>
+            </div>
+
+            {error && <div className={styles.error}>{error}</div>}
+            {successMessage && <div className={styles.success}>{successMessage}</div>}
+
+            <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Estado</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {clients.length === 0 ? (
                             <tr>
-                                <th>Usuario</th>
-                                <th>Nombre Completo</th>
-                                <th>Email</th>
-                                <th>Estado</th>
-                                <th>Fecha Creación</th>
-                                <th>Acciones</th>
+                                <td colSpan="5" className={styles.emptyState}>
+                                    No hay clientes registrados
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {clients.map(client => (
+                        ) : (
+                            clients.map(client => (
                                 <tr key={client.id}>
-                                    <td><strong>{client.username}</strong></td>
-                                    <td>{client.full_name}</td>
-                                    <td>{client.email}</td>
+                                    <td>{client.username}</td>
+                                    <td>{client.full_name || '-'}</td>
                                     <td>
-                                        <span className={`${styles.badge} ${client.is_active ? styles.active : styles.inactive}`}>
+                                        <span className={client.is_active ? styles.badgeActive : styles.badgeInactive}>
                                             {client.is_active ? 'Activo' : 'Inactivo'}
                                         </span>
                                     </td>
-                                    <td>{new Date(client.created_at).toLocaleDateString('es-ES')}</td>
-                                    <td>
-                                        <div className={styles.actions}>
-                                            <button
-                                                onClick={() => openEditModal(client)}
-                                                className={styles.actionBtn}
-                                                title="Editar"
-                                            >
-                                                <FiEdit2 size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => openPasswordModal(client.id)}
-                                                className={styles.actionBtn}
-                                                title="Cambiar contraseña"
-                                            >
-                                                <FiKey size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleToggleActive(client.id)}
-                                                className={styles.actionBtn}
-                                                title={client.is_active ? 'Desactivar' : 'Activar'}
-                                            >
-                                                {client.is_active ? <FiToggleRight size={16} /> : <FiToggleLeft size={16} />}
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClient(client.id)}
-                                                className={styles.actionBtn}
-                                                title="Eliminar cliente"
-                                                style={{ color: '#dc2626' }}
-                                            >
-                                                <FiTrash2 size={16} />
-                                            </button>
-                                        </div>
+                                    <td>{new Date(client.created_at).toLocaleDateString('es-AR')}</td>
+                                    <td className={styles.actions}>
+                                        <button className={styles.btnEdit} onClick={() => openEditModal(client)}>Editar</button>
+                                        <button className={styles.btnPassword} onClick={() => openPasswordModal(client)}>Contraseña</button>
+                                        <button
+                                            className={client.is_active ? styles.btnDeactivate : styles.btnActivate}
+                                            onClick={() => handleToggleActive(client)}
+                                        >
+                                            {client.is_active ? 'Desactivar' : 'Activar'}
+                                        </button>
                                     </td>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {clients.length === 0 && !loading && (
-                        <div className={styles.emptyState}>
-                            <p>No hay clientes registrados</p>
-                        </div>
-                    )}
-                </div>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
 
-            {/* Modal */}
+            {/* Modal crear/editar cliente */}
             {showModal && (
-                <div className={styles.modal} onClick={closeModal}>
-                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
                         <h2>{editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
-
-                        {generatedPassword && (
-                            <div className={styles.passwordAlert}>
-                                <strong>Contraseña generada:</strong> {generatedPassword}
-                                <br />
-                                <small>Guarde esta contraseña y entréguese al cliente</small>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} className={styles.form}>
-                            <div>
-                                <label className="label">Usuario*</label>
+                        <form onSubmit={handleSaveClient}>
+                            <div className={styles.formGroup}>
+                                <label>Usuario *</label>
                                 <input
                                     type="text"
-                                    className="input"
+                                    name="username"
                                     value={formData.username}
-                                    onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                    onChange={handleFormChange}
                                     required
-                                    disabled={editingClient}
+                                    placeholder="Nombre de usuario"
                                 />
                             </div>
-
-                            <div>
-                                <label className="label">Nombre Completo*</label>
+                            <div className={styles.formGroup}>
+                                <label>Nombre Completo *</label>
                                 <input
                                     type="text"
-                                    className="input"
+                                    name="full_name"
                                     value={formData.full_name}
-                                    onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                                    onChange={handleFormChange}
                                     required
+                                    placeholder="Nombre y apellido"
                                 />
                             </div>
-
-                            <div>
-                                <label className="label">Email*</label>
-                                <input
-                                    type="email"
-                                    className="input"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    required
-                                />
-                            </div>
-
                             {!editingClient && (
-                                <div>
-                                    <label className="label">Contraseña (opcional)</label>
+                                <div className={styles.formGroup}>
+                                    <label>Contraseña (opcional)</label>
                                     <input
-                                        type="text"
-                                        className="input"
+                                        type="password"
+                                        name="password"
                                         value={formData.password}
-                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        onChange={handleFormChange}
                                         placeholder="Dejar vacío para generar automáticamente"
                                     />
                                 </div>
                             )}
-
                             <div className={styles.modalActions}>
-                                <button type="button" onClick={closeModal} className="btn btn-secondary">
+                                <button type="button" className={styles.btnSecondary} onClick={() => setShowModal(false)}>
                                     Cancelar
                                 </button>
-                                <button type="submit" className="btn btn-primary">
-                                    {editingClient ? 'Actualizar' : 'Crear Cliente'}
+                                <button type="submit" className={styles.btnPrimary} disabled={saving}>
+                                    {saving ? 'Guardando...' : 'Guardar'}
                                 </button>
                             </div>
                         </form>
@@ -286,31 +266,28 @@ const ClientManagement = () => {
                 </div>
             )}
 
-            {/* Password Modal */}
+            {/* Modal cambiar contraseña */}
             {showPasswordModal && (
-                <div className={styles.modal} onClick={() => setShowPasswordModal(false)}>
-                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
                         <h2>Cambiar Contraseña</h2>
-                        <p style={{ marginBottom: '1rem', color: '#666' }}>
-                            Ingrese una nueva contraseña para el cliente, o deje en blanco para generar una aleatoria segura.
-                        </p>
-                        <form onSubmit={submitNewPassword} className={styles.form}>
-                            <div>
-                                <label className="label">Nueva Contraseña (opcional)</label>
+                        <p>Ingrese una nueva contraseña para el cliente, o deje en blanco para generar una aleatoria segura.</p>
+                        <form onSubmit={handleResetPassword}>
+                            <div className={styles.formGroup}>
+                                <label>Nueva Contraseña</label>
                                 <input
-                                    type="text"
-                                    className="input"
-                                    value={newPasswordInput}
-                                    onChange={e => setNewPasswordInput(e.target.value)}
-                                    placeholder="Dejar vacío para aleatoria"
+                                    type="password"
+                                    value={passwordData.password}
+                                    onChange={(e) => setPasswordData({ password: e.target.value })}
+                                    placeholder="Dejar vacío para generar automáticamente"
                                 />
                             </div>
                             <div className={styles.modalActions}>
-                                <button type="button" onClick={() => setShowPasswordModal(false)} className="btn btn-secondary">
+                                <button type="button" className={styles.btnSecondary} onClick={() => setShowPasswordModal(false)}>
                                     Cancelar
                                 </button>
-                                <button type="submit" className="btn btn-primary">
-                                    Actualizar Contraseña
+                                <button type="submit" className={styles.btnPrimary} disabled={saving}>
+                                    {saving ? 'Guardando...' : 'Restablecer'}
                                 </button>
                             </div>
                         </form>
