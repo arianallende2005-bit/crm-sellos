@@ -57,7 +57,8 @@ const getAllOrders = async (req, res) => {
             paramIndex++;
         }
 
-        query += ` ORDER BY o.created_at DESC`;
+        // Order: priority first (nulls last), then by creation date
+        query += ` ORDER BY o.priority_order ASC NULLS LAST, o.created_at DESC`;
 
         const result = await pool.query(query, params);
 
@@ -87,7 +88,7 @@ const getOrderById = async (req, res) => {
 
         // Get order details
         let orderQuery = `
-      SELECT o.*, u.full_name as client_name, u.email as client_email, u.username as client_username
+      SELECT o.*, u.full_name as client_name, u.username as client_username
       FROM orders o
       JOIN users u ON o.client_id = u.id
       WHERE o.id = $1
@@ -317,6 +318,24 @@ const updateOrderStatus = async (req, res) => {
             ]
         );
 
+        // If order becomes 'listo_entrega', reorder priorities:
+        // Decrement by 1 all orders with priority_order > this order's priority_order
+        if (status === 'listo_entrega' && updatedOrder.priority_order !== null) {
+            await client.query(
+                `UPDATE orders
+                 SET priority_order = priority_order - 1
+                 WHERE priority_order > $1
+                 AND is_archived = false
+                 AND current_status != 'listo_entrega'`,
+                [updatedOrder.priority_order]
+            );
+            // Clear priority from the finished order
+            await client.query(
+                `UPDATE orders SET priority_order = NULL WHERE id = $1`,
+                [id]
+            );
+        }
+
         // Commit transaction
         await client.query('COMMIT');
 
@@ -335,6 +354,34 @@ const updateOrderStatus = async (req, res) => {
         });
     } finally {
         client.release();
+    }
+};
+
+/**
+ * Update order priority
+ * PUT /api/orders/:id/priority
+ */
+const updateOrderPriority = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { priority_order } = req.body;
+
+        const priorityValue = priority_order === '' || priority_order === null ? null : parseInt(priority_order);
+
+        const result = await pool.query(
+            `UPDATE orders SET priority_order = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+            [priorityValue, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Pedido no encontrado.' });
+        }
+
+        res.json({ success: true, order: result.rows[0] });
+
+    } catch (error) {
+        console.error('Update priority error:', error);
+        res.status(500).json({ success: false, message: 'Error al actualizar prioridad.' });
     }
 };
 
@@ -568,6 +615,7 @@ module.exports = {
     getOrderById,
     createOrder,
     updateOrderStatus,
+    updateOrderPriority,
     updateOrder,
     getOrderStats,
     deleteOrder,
