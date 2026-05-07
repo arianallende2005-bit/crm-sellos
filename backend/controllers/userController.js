@@ -11,7 +11,7 @@ const { deleteImage } = require('../utils/imageProcessor');
 const getAllUsers = async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT id, username, email, full_name, role, is_active, created_at 
+            `SELECT id, username, full_name, role, is_active, created_at 
        FROM users 
        WHERE role = 'cliente' 
        ORDER BY created_at DESC`
@@ -37,10 +37,10 @@ const getAllUsers = async (req, res) => {
  */
 const createUser = async (req, res) => {
     try {
-        const { username, password, email, full_name } = req.body;
+        const { username, password, full_name } = req.body;
 
         // Validate input
-        if (!username || !email || !full_name) {
+        if (!username || !full_name) {
             return res.status(400).json({
                 success: false,
                 message: 'Todos los campos son requeridos.'
@@ -50,16 +50,16 @@ const createUser = async (req, res) => {
         // Generate password if not provided
         const userPassword = password || generateRandomPassword();
 
-        // Check if username or email already exists
+        // Check if username already exists
         const existingUser = await pool.query(
-            'SELECT id FROM users WHERE username = $1 OR email = $2',
-            [username, email]
+            'SELECT id FROM users WHERE username = $1',
+            [username]
         );
 
         if (existingUser.rows.length > 0) {
             return res.status(409).json({
                 success: false,
-                message: 'El usuario o email ya existe.'
+                message: 'El usuario ya existe.'
             });
         }
 
@@ -68,10 +68,10 @@ const createUser = async (req, res) => {
 
         // Insert new user
         const result = await pool.query(
-            `INSERT INTO users (username, password, email, full_name, role) 
-       VALUES ($1, $2, $3, $4, 'cliente') 
-       RETURNING id, username, email, full_name, role, is_active, created_at`,
-            [username, hashedPassword, email, full_name]
+            `INSERT INTO users (username, password, full_name, role) 
+       VALUES ($1, $2, $3, 'cliente') 
+       RETURNING id, username, full_name, role, is_active, created_at`,
+            [username, hashedPassword, full_name]
         );
 
         const newUser = result.rows[0];
@@ -80,7 +80,7 @@ const createUser = async (req, res) => {
             success: true,
             message: 'Usuario creado exitosamente.',
             user: newUser,
-            temporaryPassword: !password ? userPassword : undefined // Only send if auto-generated
+            temporaryPassword: !password ? userPassword : undefined
         });
 
     } catch (error) {
@@ -99,7 +99,7 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { username, email, full_name } = req.body;
+        const { username, full_name } = req.body;
 
         // Check if user exists
         const userCheck = await pool.query('SELECT id FROM users WHERE id = $1 AND role = $2', [id, 'cliente']);
@@ -115,11 +115,10 @@ const updateUser = async (req, res) => {
         const result = await pool.query(
             `UPDATE users 
        SET username = COALESCE($1, username),
-           email = COALESCE($2, email),
-           full_name = COALESCE($3, full_name)
-       WHERE id = $4 
-       RETURNING id, username, email, full_name, role, is_active, created_at`,
-            [username, email, full_name, id]
+           full_name = COALESCE($2, full_name)
+       WHERE id = $3 
+       RETURNING id, username, full_name, role, is_active, created_at`,
+            [username, full_name, id]
         );
 
         res.json({
@@ -152,7 +151,6 @@ const resetPassword = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-        // Update password - works for any user including admin
         const result = await pool.query(
             'UPDATE users SET password = $1 WHERE id = $2 RETURNING id',
             [hashedPassword, id]
@@ -194,7 +192,6 @@ const changeOwnPassword = async (req, res) => {
             return res.status(400).json({ success: false, message: 'La nueva contraseña debe tener al menos 6 caracteres.' });
         }
 
-        // Get current hashed password
         const result = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
@@ -275,7 +272,6 @@ const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check if user exists and is a client
         const userCheck = await client.query('SELECT id FROM users WHERE id = $1 AND role = $2', [id, 'cliente']);
         if (userCheck.rows.length === 0) {
             client.release();
@@ -287,15 +283,12 @@ const deleteUser = async (req, res) => {
 
         await client.query('BEGIN');
 
-        // Fetch all order images for this user to delete them from filesystem
         const ordersResult = await client.query('SELECT image_url FROM orders WHERE client_id = $1 AND image_url IS NOT NULL', [id]);
-        
-        // Delete user (cascade will handle orders, order_history, notifications in DB)
+
         await client.query('DELETE FROM users WHERE id = $1 AND role = $2', [id, 'cliente']);
 
         await client.query('COMMIT');
 
-        // Delete images from filesystem
         for (const row of ordersResult.rows) {
             if (row.image_url) {
                 const absolutePath = path.join(process.cwd(), row.image_url);
