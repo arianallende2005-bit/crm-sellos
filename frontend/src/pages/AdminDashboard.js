@@ -103,14 +103,6 @@ const AdminDashboard = () => {
                     </div>
                     <div className={styles.headerActions}>
                         <NotificationBell />
-                        <button
-                            onClick={() => { setShowPasswordModal(true); setPwError(''); setPwSuccess(''); }}
-                            className="btn btn-secondary"
-                            title="Cambiar contraseña"
-                        >
-                            <FiLock size={18} />
-                            Cambiar Contraseña
-                        </button>
                         <button onClick={logout} className="btn btn-secondary">
                             <FiLogOut size={18} />
                             Salir
