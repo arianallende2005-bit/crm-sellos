@@ -37,7 +37,8 @@
     top: calc(100% + 0.5rem);
     right: 0;
     width: 360px;
-    max-height: 500px;
+    max-width: 90vw;
+    max-height: 70vh;
     background: white;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
