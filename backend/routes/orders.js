@@ -22,6 +22,9 @@ router.post('/', requireAdmin, upload.single('image'), handleUploadError, orderC
 // Update order status (admin only)
 router.put('/:id/status', requireAdmin, orderController.updateOrderStatus);
 
+// Update order priority (admin only)
+router.put('/:id/priority', requireAdmin, orderController.updateOrderPriority);
+
 // Toggle archive status (admin only)
 router.put('/:id/archive', requireAdmin, orderController.toggleArchiveStatus);
 
