@@ -103,12 +103,19 @@ const OrderManagement = () => {
         }
     };
 
+    const handlePriorityChange = async (orderId, priority) => {
+        try {
+            await ordersAPI.updatePriority(orderId, priority);
+            fetchOrders();
+        } catch (error) {
+            console.error('Error updating priority:', error);
+        }
+    };
+
     const handleDeleteOrder = async (id) => {
-        console.log('Attempting to delete order with ID:', id);
         if (window.confirm('¿Está seguro de que desea eliminar este pedido? Esta acción no se puede deshacer.')) {
             try {
-                const response = await ordersAPI.delete(id);
-                console.log('Delete response:', response.data);
+                await ordersAPI.delete(id);
                 alert('Pedido eliminado exitosamente');
                 fetchOrders();
             } catch (error) {
@@ -151,6 +158,7 @@ const OrderManagement = () => {
         const doc = new jsPDF();
         doc.text("Lista de Pedidos", 14, 15);
 
+        // Define which columns to include in the PDF (Priority is EXCLUDED)
         const tableColumn = ["Producto", "Cliente", "Estado", "Nro. Remito", "Fecha"];
         const tableRows = [];
 
@@ -248,6 +256,7 @@ const OrderManagement = () => {
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th style={{ width: '80px' }}>Prioridad</th>
                                 <th>Producto</th>
                                 <th>Cliente</th>
                                 <th>Estado</th>
@@ -259,6 +268,17 @@ const OrderManagement = () => {
                         <tbody>
                             {orders.map(order => (
                                 <tr key={order.id}>
+                                    <td style={{ textAlign: 'center' }}>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            className="input"
+                                            style={{ width: '60px', textAlign: 'center', padding: '4px' }}
+                                            value={order.priority_order || ''}
+                                            onChange={(e) => handlePriorityChange(order.id, e.target.value)}
+                                            placeholder="-"
+                                        />
+                                    </td>
                                     <td><strong>{order.product_name}</strong></td>
                                     <td>{order.client_name}</td>
                                     <td><StatusBadge status={order.current_status} /></td>
