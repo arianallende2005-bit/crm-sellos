@@ -43,7 +43,7 @@ const createUser = async (req, res) => {
         if (!username || !full_name) {
             return res.status(400).json({
                 success: false,
-                message: 'Todos los campos son requeridos.'
+                message: 'Usuario y nombre completo son requeridos.'
             });
         }
 
