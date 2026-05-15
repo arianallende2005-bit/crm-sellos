@@ -228,7 +228,7 @@ const OrderManagement = () => {
         doc.text("Lista de Pedidos", 14, 15);
 
         // Define which columns to include in the PDF (Priority is EXCLUDED)
-        const tableColumn = ["Producto", "Cliente", "Estado", "Nro. Remito", "F. Entrega", "Fecha Creación"];
+        const tableColumn = ["Producto", "Cliente", "Estado", "Nro. Remito", "Fecha Creación", "F. Entrega"];
         const tableRows = [];
 
         orders.forEach(order => {
@@ -237,8 +237,8 @@ const OrderManagement = () => {
                 order.client_name,
                 order.current_status,
                 order.nro_remito || '-',
-                order.delivery_date ? new Date(order.delivery_date).toLocaleDateString('es-ES') : '-',
-                new Date(order.created_at).toLocaleDateString('es-ES')
+                new Date(order.created_at).toLocaleDateString('es-ES'),
+                order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'
             ];
             tableRows.push(orderData);
         });
@@ -331,8 +331,8 @@ const OrderManagement = () => {
                                 <th>Cliente</th>
                                 <th>Estado</th>
                                 <th>Nro. Remito</th>
-                                <th>Fecha de entrega</th>
                                 <th>Fecha Creación</th>
+                                <th>Fecha de entrega</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -356,8 +356,8 @@ const OrderManagement = () => {
                                     <td>
                                         {order.nro_remito || '-'}
                                     </td>
-                                    <td>{order.delivery_date ? new Date(order.delivery_date).toLocaleDateString('es-ES') : '-'}</td>
                                     <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
+                                    <td>{order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                     <td>
                                         <div className={styles.actions}>
                                             <button
