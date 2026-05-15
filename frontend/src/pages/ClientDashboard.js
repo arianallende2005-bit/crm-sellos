@@ -167,6 +167,9 @@ const ClientDashboard = () => {
                                         {order.nro_remito && (
                                             <p className={styles.nroRemito}><strong>Nro. Remito:</strong> {order.nro_remito}</p>
                                         )}
+                                        {order.delivery_date && (
+                                            <p className={styles.nroRemito}><strong>Fecha de entrega estimada:</strong> {new Date(order.delivery_date).toLocaleDateString('es-ES')}</p>
+                                        )}
                                         <StatusBadge status={order.current_status} />
                                         <p className={styles.orderDate}>
                                             Creado {formatDistanceToNow(new Date(order.created_at), { addSuffix: true, locale: es })}
@@ -214,6 +217,11 @@ const ClientDashboard = () => {
                                     {selectedOrder.nro_remito && (
                                         <p style={{ marginTop: 'var(--spacing-sm)' }}>
                                             <strong>Nro. Remito:</strong> {selectedOrder.nro_remito}
+                                        </p>
+                                    )}
+                                    {selectedOrder.delivery_date && (
+                                        <p style={{ marginTop: 'var(--spacing-sm)' }}>
+                                            <strong>Fecha de entrega estimada:</strong> {new Date(selectedOrder.delivery_date).toLocaleDateString('es-ES')}
                                         </p>
                                     )}
                                 </div>

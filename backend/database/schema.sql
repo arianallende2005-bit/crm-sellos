@@ -40,6 +40,7 @@ CREATE TABLE orders (
   product_name VARCHAR(200) NOT NULL,
   image_url VARCHAR(500), -- Path to uploaded image
   nro_remito VARCHAR(50), -- Remittance number / Tracking number
+  delivery_date DATE, -- Estimated delivery date
   current_status order_status NOT NULL DEFAULT 'diseno_realizado',
   is_archived BOOLEAN DEFAULT false,
   archived_date TIMESTAMP, -- When order was archived

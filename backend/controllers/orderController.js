@@ -145,7 +145,7 @@ const createOrder = async (req, res) => {
     const client = await pool.connect();
 
     try {
-        const { client_id, product_name } = req.body;
+        const { client_id, product_name, delivery_date } = req.body;
         const userId = req.user.id;
 
         // Validate input
@@ -183,10 +183,10 @@ const createOrder = async (req, res) => {
 
         // Insert order
         const orderResult = await client.query(
-            `INSERT INTO orders (client_id, product_name, image_url, current_status)
-       VALUES ($1, $2, $3, 'diseno_realizado')
+            `INSERT INTO orders (client_id, product_name, image_url, delivery_date, current_status)
+       VALUES ($1, $2, $3, $4, 'diseno_realizado')
        RETURNING *`,
-            [client_id, product_name, imagePath]
+            [client_id, product_name, imagePath, delivery_date || null]
         );
 
         const newOrder = orderResult.rows[0];
@@ -245,7 +245,7 @@ const updateOrderStatus = async (req, res) => {
 
     try {
         const { id } = req.params;
-        const { status, notes, nro_remito } = req.body;
+        const { status, notes, nro_remito, delivery_date } = req.body;
         const userId = req.user.id;
 
         const validStatuses = [
@@ -270,8 +270,12 @@ const updateOrderStatus = async (req, res) => {
         let queryParams = [status, id];
         let setQuery = 'SET current_status = $1, updated_at = CURRENT_TIMESTAMP';
         if (nro_remito !== undefined && nro_remito !== '') {
-            setQuery += ', nro_remito = $3';
+            setQuery += `, nro_remito = $${queryParams.length + 1}`;
             queryParams.push(nro_remito);
+        }
+        if (delivery_date !== undefined) {
+            setQuery += `, delivery_date = $${queryParams.length + 1}`;
+            queryParams.push(delivery_date === '' ? null : delivery_date);
         }
 
         const orderResult = await client.query(

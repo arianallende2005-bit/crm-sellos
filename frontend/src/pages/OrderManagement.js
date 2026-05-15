@@ -18,12 +18,14 @@ const OrderManagement = () => {
     const [formData, setFormData] = useState({
         client_id: '',
         product_name: '',
+        delivery_date: '',
         image: null
     });
     const [updateData, setUpdateData] = useState({
         status: '',
         notes: '',
-        nro_remito: ''
+        nro_remito: '',
+        delivery_date: ''
     });
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('active'); // 'active', 'archived', 'all'
@@ -74,6 +76,9 @@ const OrderManagement = () => {
         const data = new FormData();
         data.append('client_id', formData.client_id);
         data.append('product_name', formData.product_name);
+        if (formData.delivery_date) {
+            data.append('delivery_date', formData.delivery_date);
+        }
         if (formData.image) {
             data.append('image', formData.image);
         }
@@ -83,7 +88,7 @@ const OrderManagement = () => {
             alert('Pedido creado exitosamente');
             fetchOrders();
             setShowCreateModal(false);
-            setFormData({ client_id: '', product_name: '', image: null });
+            setFormData({ client_id: '', product_name: '', delivery_date: '', image: null });
         } catch (error) {
             alert(error.response?.data?.message || 'Error al crear pedido');
         }
@@ -93,11 +98,11 @@ const OrderManagement = () => {
         e.preventDefault();
 
         try {
-            await ordersAPI.updateStatus(selectedOrder.id, updateData.status, updateData.notes, updateData.nro_remito);
+            await ordersAPI.updateStatus(selectedOrder.id, updateData.status, updateData.notes, updateData.nro_remito, updateData.delivery_date);
             alert('Estado actualizado exitosamente');
             fetchOrders();
             setShowUpdateModal(false);
-            setUpdateData({ status: '', notes: '', nro_remito: '' });
+            setUpdateData({ status: '', notes: '', nro_remito: '', delivery_date: '' });
         } catch (error) {
             alert('Error al actualizar estado');
         }
@@ -139,7 +144,7 @@ const OrderManagement = () => {
 
     const openUpdateModal = (order) => {
         setSelectedOrder(order);
-        setUpdateData({ status: order.current_status, notes: '', nro_remito: order.nro_remito || '' });
+        setUpdateData({ status: order.current_status, notes: '', nro_remito: order.nro_remito || '', delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : '' });
         setShowUpdateModal(true);
     };
 
@@ -159,7 +164,7 @@ const OrderManagement = () => {
         doc.text("Lista de Pedidos", 14, 15);
 
         // Define which columns to include in the PDF (Priority is EXCLUDED)
-        const tableColumn = ["Producto", "Cliente", "Estado", "Nro. Remito", "Fecha"];
+        const tableColumn = ["Producto", "Cliente", "Estado", "Nro. Remito", "F. Entrega", "Fecha Creación"];
         const tableRows = [];
 
         orders.forEach(order => {
@@ -168,6 +173,7 @@ const OrderManagement = () => {
                 order.client_name,
                 order.current_status,
                 order.nro_remito || '-',
+                order.delivery_date ? new Date(order.delivery_date).toLocaleDateString('es-ES') : '-',
                 new Date(order.created_at).toLocaleDateString('es-ES')
             ];
             tableRows.push(orderData);
@@ -186,7 +192,7 @@ const OrderManagement = () => {
         { value: 'diseno_realizado', label: 'Diseño realizado' },
         { value: 'procesado_fotopolimero', label: 'Procesado de fotopolimero' },
         { value: 'montaje', label: 'Montaje' },
-        { value: 'correcion', label: 'Correcion' },
+        { value: 'correcion', label: 'Corrección' },
         { value: 'listo_entrega', label: 'Listo para entrega' }
     ];
 
@@ -261,6 +267,7 @@ const OrderManagement = () => {
                                 <th>Cliente</th>
                                 <th>Estado</th>
                                 <th>Nro. Remito</th>
+                                <th>Fecha de entrega</th>
                                 <th>Fecha Creación</th>
                                 <th>Acciones</th>
                             </tr>
@@ -285,6 +292,7 @@ const OrderManagement = () => {
                                     <td>
                                         {order.nro_remito || '-'}
                                     </td>
+                                    <td>{order.delivery_date ? new Date(order.delivery_date).toLocaleDateString('es-ES') : '-'}</td>
                                     <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
                                     <td>
                                         <div className={styles.actions}>
@@ -375,6 +383,16 @@ const OrderManagement = () => {
                             </div>
 
                             <div>
+                                <label className="label">Fecha de entrega (estimada)</label>
+                                <input
+                                    type="date"
+                                    className="input"
+                                    value={formData.delivery_date}
+                                    onChange={e => setFormData({ ...formData, delivery_date: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
                                 <label className="label">Imagen del Producto</label>
                                 <input
                                     type="file"
@@ -437,6 +455,16 @@ const OrderManagement = () => {
                             )}
 
                             <div>
+                                <label className="label">Fecha de entrega (estimada)</label>
+                                <input
+                                    type="date"
+                                    className="input"
+                                    value={updateData.delivery_date}
+                                    onChange={e => setUpdateData({ ...updateData, delivery_date: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
                                 <label className="label">Notas (opcional)</label>
                                 <textarea
                                     className="input"
@@ -471,6 +499,11 @@ const OrderManagement = () => {
                         {selectedOrder.nro_remito && (
                             <p className={styles.orderInfo}>
                                 <strong>Nro. Remito:</strong> {selectedOrder.nro_remito}
+                            </p>
+                        )}
+                        {selectedOrder.delivery_date && (
+                            <p className={styles.orderInfo}>
+                                <strong>Fecha de entrega estimada:</strong> {new Date(selectedOrder.delivery_date).toLocaleDateString('es-ES')}
                             </p>
                         )}
 
