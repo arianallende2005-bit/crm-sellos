@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ordersAPI, usersAPI, STATIC_URL } from '../services/api';
-import { FiArrowLeft, FiPlus, FiUpload, FiTrash2, FiSearch, FiDownload, FiArchive } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiUpload, FiTrash2, FiSearch, FiDownload, FiArchive, FiEdit2 } from 'react-icons/fi';
 import StatusBadge from '../components/StatusBadge';
 import OrderTimeline from '../components/OrderTimeline';
 import styles from './OrderManagement.module.css';
@@ -15,6 +15,7 @@ const OrderManagement = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [formData, setFormData] = useState({
         client_id: '',
         product_name: '',
@@ -25,6 +26,11 @@ const OrderManagement = () => {
         status: '',
         notes: '',
         nro_remito: '',
+        delivery_date: ''
+    });
+    const [editFormData, setEditFormData] = useState({
+        id: '',
+        product_name: '',
         delivery_date: ''
     });
     const [searchTerm, setSearchTerm] = useState('');
@@ -52,7 +58,20 @@ const OrderManagement = () => {
 
             const response = await ordersAPI.getAll(params);
             if (response.data.success) {
-                setOrders(response.data.orders);
+                let fetchedOrders = response.data.orders;
+                if (filter === 'archived') {
+                    fetchedOrders.sort((a, b) => {
+                        const remitoA = a.nro_remito ? a.nro_remito.toString() : '';
+                        const remitoB = b.nro_remito ? b.nro_remito.toString() : '';
+                        const numA = parseInt(remitoA.replace(/\D/g, ''), 10) || 0;
+                        const numB = parseInt(remitoB.replace(/\D/g, ''), 10) || 0;
+                        if (numA !== numB) {
+                            return numB - numA;
+                        }
+                        return remitoB.localeCompare(remitoA);
+                    });
+                }
+                setOrders(fetchedOrders);
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -139,6 +158,35 @@ const OrderManagement = () => {
             }
         } catch (error) {
             console.error('Error fetching order:', error);
+        }
+    };
+
+    const openEditModal = (order) => {
+        setEditFormData({
+            id: order.id,
+            product_name: order.product_name,
+            delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : ''
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const data = new FormData();
+            data.append('product_name', editFormData.product_name);
+            if (editFormData.delivery_date) {
+                data.append('delivery_date', editFormData.delivery_date);
+            } else {
+                data.append('delivery_date', ''); // Clear if empty
+            }
+
+            await ordersAPI.update(editFormData.id, data);
+            alert('Pedido editado exitosamente');
+            fetchOrders();
+            setShowEditModal(false);
+        } catch (error) {
+            alert('Error al editar el pedido');
         }
     };
 
@@ -296,6 +344,13 @@ const OrderManagement = () => {
                                     <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
                                     <td>
                                         <div className={styles.actions}>
+                                            <button
+                                                className="btn btn-secondary btn-sm"
+                                                onClick={() => openEditModal(order)}
+                                                title="Editar Pedido"
+                                            >
+                                                <FiEdit2 size={14} /> Editar
+                                            </button>
                                             <button
                                                 onClick={() => handleViewOrder(order.id)}
                                                 className="btn btn-secondary"
@@ -481,6 +536,50 @@ const OrderManagement = () => {
                                 </button>
                                 <button type="submit" className="btn btn-success">
                                     Actualizar Estado
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Order Modal */}
+            {showEditModal && (
+                <div className={styles.modal} onClick={() => setShowEditModal(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Editar Pedido</h2>
+                            <button onClick={() => setShowEditModal(false)} className={styles.closeBtn}>×</button>
+                        </div>
+                        <form onSubmit={handleEditSubmit} className={styles.form}>
+                            <div>
+                                <label className="label">Nombre del Producto*</label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    value={editFormData.product_name}
+                                    onChange={e => setEditFormData({ ...editFormData, product_name: e.target.value })}
+                                    required
+                                    placeholder="Ej: Sello personalizado 40x40mm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="label">Fecha de entrega (estimada)</label>
+                                <input
+                                    type="date"
+                                    className="input"
+                                    value={editFormData.delivery_date}
+                                    onChange={e => setEditFormData({ ...editFormData, delivery_date: e.target.value })}
+                                />
+                            </div>
+
+                            <div className={styles.modalActions}>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    Guardar Cambios
                                 </button>
                             </div>
                         </form>
