@@ -8,9 +8,9 @@ const OrderTimeline = ({ order }) => {
     const stages = [
         { key: 'diseno_realizado', label: 'Diseño realizado', icon: FiEdit },
         { key: 'procesado_fotopolimero', label: 'Procesado', icon: FiTool },
-        { key: 'montaje', label: 'Montaje', icon: FiPackage },
-        { key: 'correcion', label: 'Correcion', icon: FiEdit },
-        { key: 'listo_entrega', label: 'Listo', icon: FiCheckCircle },
+        { key: 'montaje', label: 'Montaje', icon: FiTool },
+        { key: 'correcion', label: 'Corrección', icon: FiEdit },
+        { key: 'listo_entrega', label: 'Listo para entrega', icon: FiCheckCircle },
     ];
 
     // Create a map of status to history entry

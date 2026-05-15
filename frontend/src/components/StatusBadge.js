@@ -20,7 +20,7 @@ const StatusBadge = ({ status }) => {
             icon: FiPackage,
         },
         correcion: {
-            label: 'Correcion',
+            label: 'Corrección',
             color: 'info',
             icon: FiEdit,
         },
