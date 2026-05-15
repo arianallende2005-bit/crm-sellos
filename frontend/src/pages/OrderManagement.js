@@ -31,7 +31,8 @@ const OrderManagement = () => {
     const [editFormData, setEditFormData] = useState({
         id: '',
         product_name: '',
-        delivery_date: ''
+        delivery_date: '',
+        image: null
     });
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('active'); // 'active', 'archived', 'all'
@@ -176,7 +177,8 @@ const OrderManagement = () => {
         setEditFormData({
             id: order.id,
             product_name: order.product_name,
-            delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : ''
+            delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : '',
+            image: null
         });
         setShowEditModal(true);
     };
@@ -190,6 +192,9 @@ const OrderManagement = () => {
                 data.append('delivery_date', editFormData.delivery_date);
             } else {
                 data.append('delivery_date', ''); // Clear if empty
+            }
+            if (editFormData.image) {
+                data.append('image', editFormData.image);
             }
 
             await ordersAPI.update(editFormData.id, data);
@@ -583,6 +588,17 @@ const OrderManagement = () => {
                                     value={editFormData.delivery_date}
                                     onChange={e => setEditFormData({ ...editFormData, delivery_date: e.target.value })}
                                 />
+                            </div>
+
+                            <div>
+                                <label className="label">Actualizar Imagen del Producto</label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={e => setEditFormData({ ...editFormData, image: e.target.files[0] })}
+                                    className="input"
+                                />
+                                <small style={{ color: 'var(--text-light)' }}>Dejar vacío si no desea cambiar la imagen actual.</small>
                             </div>
 
                             <div className={styles.modalActions}>
