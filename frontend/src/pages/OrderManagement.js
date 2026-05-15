@@ -92,6 +92,17 @@ const OrderManagement = () => {
     const handleCreateOrder = async (e) => {
         e.preventDefault();
 
+        const isDuplicate = orders.some(
+            o => o.product_name.toLowerCase().trim() === formData.product_name.toLowerCase().trim()
+        );
+
+        if (isDuplicate) {
+            const confirmCreate = window.confirm(`ATENCIÓN: Ya existe un pedido cargado con el nombre "${formData.product_name}". ¿Estás seguro de que deseas crear otro pedido con el mismo nombre?`);
+            if (!confirmCreate) {
+                return;
+            }
+        }
+
         const data = new FormData();
         data.append('client_id', formData.client_id);
         data.append('product_name', formData.product_name);
