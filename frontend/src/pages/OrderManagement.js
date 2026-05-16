@@ -629,13 +629,13 @@ const OrderManagement = () => {
                         )}
                         {selectedOrder.delivery_date && (
                             <p className={styles.orderInfo}>
-                                <strong>Fecha de entrega estimada:</strong> {new Date(selectedOrder.delivery_date).toLocaleDateString('es-ES')}
+                                <strong>Fecha de entrega estimada:</strong> {selectedOrder.delivery_date.split('T')[0].split('-').reverse().join('/')}
                             </p>
                         )}
 
                         {selectedOrder.image_url && (
                             <div className={styles.orderImage}>
-                                <img src={`${STATIC_URL}/${selectedOrder.image_url}`} alt={selectedOrder.product_name} />
+                                <img src={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`} alt={selectedOrder.product_name} />
                             </div>
                         )}
 

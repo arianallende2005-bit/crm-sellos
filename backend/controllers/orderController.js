@@ -1,5 +1,7 @@
 const pool = require('../config/database');
 const path = require('path');
+const fs = require('fs');
+const supabase = require('../config/supabase');
 const { compressImage, deleteImage } = require('../utils/imageProcessor');
 
 /**
@@ -173,9 +175,35 @@ const createOrder = async (req, res) => {
 
         // Process uploaded image if present
         if (req.file) {
-            imagePath = await compressImage(req.file.path);
-            // Store relative path and normalize backslashes for URL compatibility
-            imagePath = path.relative(process.cwd(), imagePath).replace(/\\/g, '/');
+            const localCompressedPath = await compressImage(req.file.path);
+            const fileBuffer = fs.readFileSync(localCompressedPath);
+            const fileName = `${Date.now()}-${path.basename(localCompressedPath)}`;
+            
+            const { data, error } = await supabase.storage
+                .from('images')
+                .upload(`orders/${fileName}`, fileBuffer, {
+                    contentType: 'image/webp',
+                    upsert: true
+                });
+
+            if (error) {
+                console.error("Supabase upload error:", error);
+                throw new Error("Error subiendo la imagen a Supabase.");
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('images')
+                .getPublicUrl(`orders/${fileName}`);
+
+            imagePath = publicUrlData.publicUrl;
+
+            // Cleanup local files
+            try {
+                fs.unlinkSync(req.file.path);
+                fs.unlinkSync(localCompressedPath);
+            } catch (err) {
+                console.error("Error deleting local files:", err);
+            }
         }
 
         // Start transaction
@@ -405,11 +433,48 @@ const updateOrder = async (req, res) => {
             // Get old image path to delete it
             const oldOrderResult = await pool.query('SELECT image_url FROM orders WHERE id = $1', [id]);
             if (oldOrderResult.rows.length > 0 && oldOrderResult.rows[0].image_url) {
-                deleteImage(oldOrderResult.rows[0].image_url);
+                const oldUrl = oldOrderResult.rows[0].image_url;
+                if (oldUrl.includes('supabase.co')) {
+                    // Extract filename
+                    const parts = oldUrl.split('/orders/');
+                    if (parts.length > 1) {
+                        const fileName = parts[1];
+                        await supabase.storage.from('images').remove([`orders/${fileName}`]);
+                    }
+                } else {
+                    deleteImage(oldUrl); // legacy local image
+                }
             }
 
-            imagePath = await compressImage(req.file.path);
-            imagePath = path.relative(process.cwd(), imagePath).replace(/\\/g, '/');
+            const localCompressedPath = await compressImage(req.file.path);
+            const fileBuffer = fs.readFileSync(localCompressedPath);
+            const fileName = `${Date.now()}-${path.basename(localCompressedPath)}`;
+            
+            const { data, error } = await supabase.storage
+                .from('images')
+                .upload(`orders/${fileName}`, fileBuffer, {
+                    contentType: 'image/webp',
+                    upsert: true
+                });
+
+            if (error) {
+                console.error("Supabase upload error:", error);
+                throw new Error("Error subiendo la imagen a Supabase.");
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('images')
+                .getPublicUrl(`orders/${fileName}`);
+
+            imagePath = publicUrlData.publicUrl;
+
+            // Cleanup local files
+            try {
+                fs.unlinkSync(req.file.path);
+                fs.unlinkSync(localCompressedPath);
+            } catch (err) {
+                console.error("Error deleting local files:", err);
+            }
         }
 
         // Update order

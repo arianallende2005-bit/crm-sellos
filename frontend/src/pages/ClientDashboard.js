@@ -157,7 +157,7 @@ const ClientDashboard = () => {
                                 >
                                     {order.image_url && (
                                         <div className={styles.orderImage}>
-                                            <img src={`${STATIC_URL}/${order.image_url}`} alt={order.product_name} />
+                                            <img src={order.image_url.startsWith('http') ? order.image_url : `${STATIC_URL}/${order.image_url}`} alt={order.product_name} />
                                         </div>
                                     )}
                                     <div className={styles.orderInfo}>
@@ -196,10 +196,10 @@ const ClientDashboard = () => {
                         <div className={styles.modalBody}>
                             {selectedOrder.image_url && (
                                 <div className={styles.modalImage}>
-                                    <img src={`${STATIC_URL}/${selectedOrder.image_url}`} alt={selectedOrder.product_name} />
+                                    <img src={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`} alt={selectedOrder.product_name} />
                                     <div className={styles.imageActions}>
                                         <a
-                                            href={`${STATIC_URL}/${selectedOrder.image_url}`}
+                                            href={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={styles.fullImageLink}
