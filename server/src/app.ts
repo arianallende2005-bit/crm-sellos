@@ -10,7 +10,23 @@ import orderRoutes from './routes/orderRoutes';
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  'https://crm-fronted-qgjv.onrender.com',
+  'https://centralgspro.com',
+  'https://www.centralgspro.com',
+  'http://localhost:5173' // Incluyo localhost para que puedas seguir probando localmente
+];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 // Routes

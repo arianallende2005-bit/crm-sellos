@@ -1,10 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Layout } from '../components/Layout';
-import axios from 'axios';
-
 const ClientDashboard: React.FC = () => {
-    const [orders, setOrders] = useState([]);
-
     useEffect(() => {
         // fetch orders
     }, []);

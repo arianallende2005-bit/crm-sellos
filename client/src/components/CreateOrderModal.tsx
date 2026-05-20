@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import { X } from 'lucide-react';
 
 interface Client {
@@ -19,6 +19,7 @@ export const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ isOpen, onCl
     const [selectedClientId, setSelectedClientId] = useState<string>('');
     const [productName, setProductName] = useState('');
     const [imageUrl, setImageUrl] = useState('');
+    const [deliveryDate, setDeliveryDate] = useState('');
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -29,7 +30,7 @@ export const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ isOpen, onCl
 
     const fetchClients = async () => {
         try {
-            const response = await axios.get('http://localhost:3001/api/users/clients');
+            const response = await api.get('/users/clients');
             // Filter to only show clients? Or backend does it? Backend `getUsers` usually returns all.
             // Assuming we want to filter by role 'cliente' if the backend returns role.
             // For now, let's assume the backend endpoint exists and returns users.
@@ -43,16 +44,18 @@ export const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ isOpen, onCl
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3001/api/orders', {
+            await api.post('/orders', {
                 clientId: parseInt(selectedClientId),
                 productName,
-                imageUrl
+                imageUrl,
+                deliveryDate: deliveryDate ? deliveryDate : undefined
             });
             onOrderCreated();
             onClose();
             // Reset form
             setProductName('');
             setImageUrl('');
+            setDeliveryDate('');
             setSelectedClientId('');
         } catch (err) {
             console.error('Error creating order:', err);
@@ -116,10 +119,20 @@ export const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ isOpen, onCl
                                 <label className="block text-sm font-medium text-gray-700">URL Imagen (Opcional)</label>
                                 <input
                                     type="text"
-                                    className="mt-1 flex-1 block w-full min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                                    className="mt-1 flex-1 block w-full min-w-0 rounded-md sm:text-sm border-gray-300"
                                     placeholder="https://..."
                                     value={imageUrl}
                                     onChange={(e) => setImageUrl(e.target.value)}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Fecha de Entrega (Opcional)</label>
+                                <input
+                                    type="date"
+                                    className="mt-1 flex-1 block w-full min-w-0 rounded-md sm:text-sm border-gray-300"
+                                    value={deliveryDate}
+                                    onChange={(e) => setDeliveryDate(e.target.value)}
                                 />
                             </div>
 

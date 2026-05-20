@@ -10,6 +10,7 @@ interface Order {
         username: string;
         fullName: string | null;
     };
+    deliveryDate: string | null;
 }
 
 interface OrderTableProps {
@@ -56,6 +57,9 @@ export const OrderTable: React.FC<OrderTableProps> = ({ orders }) => {
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Fecha
                                     </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Entrega
+                                    </th>
                                     <th scope="col" className="relative px-6 py-3">
                                         <span className="sr-only">Acciones</span>
                                     </th>
@@ -85,6 +89,9 @@ export const OrderTable: React.FC<OrderTableProps> = ({ orders }) => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {new Date(order.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : 'Sin fecha'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button className="text-indigo-600 hover:text-indigo-900 mr-3">

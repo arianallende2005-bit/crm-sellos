@@ -8,13 +8,14 @@ interface AuthRequest extends Request {
 
 export const createOrder = async (req: Request, res: Response) => {
     try {
-        const { clientId, productName, imageUrl } = req.body;
+        const { clientId, productName, imageUrl, deliveryDate } = req.body;
 
         const newOrder = await prisma.order.create({
             data: {
                 clientId: parseInt(clientId),
                 productName,
                 imageUrl,
+                deliveryDate: deliveryDate ? new Date(deliveryDate) : null,
                 currentStatus: 1, // Pedido Recibido
                 history: {
                     create: {
@@ -67,7 +68,7 @@ export const getOrders = async (req: Request, res: Response) => {
                 },
                 history: true, // simplified
             },
-            orderBy: { updatedAt: 'desc' },
+            orderBy: { deliveryDate: { sort: 'asc', nulls: 'last' } },
         });
 
         res.json(orders);
@@ -119,7 +120,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
         }
 
         // Transaction to update order and add history
-        const updatedOrder = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const updatedOrder = await prisma.$transaction(async (tx) => {
             const order = await tx.order.update({
                 where: { id: parseInt(id as string) },
                 data: {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import { X } from 'lucide-react';
 
 interface CreateClientModalProps {
@@ -26,7 +26,7 @@ export const CreateClientModal: React.FC<CreateClientModalProps> = ({ isOpen, on
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3001/api/users/clients', formData);
+            await api.post('/users/clients', formData);
             onClientCreated();
             onClose();
             setFormData({ username: '', password: '', fullName: '' });

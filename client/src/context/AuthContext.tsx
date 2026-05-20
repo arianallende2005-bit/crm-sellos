@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
 
 interface User {
     id: number;
@@ -28,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const savedUser = localStorage.getItem('user');
         if (token && savedUser) {
             setUser(JSON.parse(savedUser));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            // El interceptor en api.ts maneja el token automáticamente
         }
         setIsLoading(false);
     }, [token]);
@@ -38,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('user', JSON.stringify(newUser));
         setToken(newToken);
         setUser(newUser);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        // El interceptor en api.ts maneja el token automáticamente
     };
 
     const logout = () => {
@@ -46,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('user');
         setToken(null);
         setUser(null);
-        delete axios.defaults.headers.common['Authorization'];
+        // El interceptor en api.ts maneja el token automáticamente
     };
 
     return (

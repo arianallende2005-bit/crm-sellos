@@ -4,7 +4,7 @@ import { OrderTable } from '../components/OrderTable';
 import { CreateOrderModal } from '../components/CreateOrderModal';
 import { ClientTable } from '../components/ClientTable';
 import { CreateClientModal } from '../components/CreateClientModal';
-import axios from 'axios';
+import api from '../api/axios';
 
 interface StatCardProps {
     title: string;
@@ -43,7 +43,7 @@ const AdminDashboard: React.FC = () => {
 
     const fetchOrders = async () => {
         try {
-            const response = await axios.get('http://localhost:3001/api/orders');
+            const response = await api.get('/orders');
             setOrders(response.data);
             const active = response.data.filter((o: any) => o.currentStatus < 5).length;
             const completed = response.data.filter((o: any) => o.currentStatus === 5).length;
@@ -56,7 +56,7 @@ const AdminDashboard: React.FC = () => {
 
     const fetchClients = async () => {
         try {
-            const response = await axios.get('http://localhost:3001/api/users/clients');
+            const response = await api.get('/users/clients');
             setClients(response.data);
         } catch (error) {
             console.error('Error fetching clients:', error);
