@@ -78,7 +78,8 @@ const AdminDashboard = () => {
         { status: 'procesado_fotopolimero', label: 'Procesado Fotopolímero', color: 'primary' },
         { status: 'montaje', label: 'Montaje', color: 'warning' },
         { status: 'correcion', label: 'Corrección', color: 'info' },
-        { status: 'listo_entrega', label: 'Listo para Entrega', color: 'success' },
+        { status: 'listo_entrega', label: 'Remito', color: 'success' },
+        { status: 'entregado', label: 'Entregado', color: 'success' },
     ];
 
     if (loading) {

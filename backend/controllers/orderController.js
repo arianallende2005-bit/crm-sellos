@@ -281,7 +281,8 @@ const updateOrderStatus = async (req, res) => {
             'procesado_fotopolimero',
             'montaje',
             'correcion',
-            'listo_entrega'
+            'listo_entrega',
+            'entregado'
         ];
 
         if (!validStatuses.includes(status)) {
@@ -337,7 +338,8 @@ const updateOrderStatus = async (req, res) => {
             'procesado_fotopolimero': 'Procesado de fotopolímero',
             'montaje': 'Montaje',
             'correcion': 'Corrección',
-            'listo_entrega': 'Listo para entrega'
+            'listo_entrega': 'Remito',
+            'entregado': 'Entregado'
         };
 
         await client.query(
@@ -352,13 +354,13 @@ const updateOrderStatus = async (req, res) => {
 
         // If order becomes 'listo_entrega', reorder priorities:
         // Decrement by 1 all orders with priority_order > this order's priority_order
-        if (status === 'listo_entrega' && updatedOrder.priority_order !== null) {
+        if ((status === 'listo_entrega' || status === 'entregado') && updatedOrder.priority_order !== null) {
             await client.query(
                 `UPDATE orders
                  SET priority_order = priority_order - 1
                  WHERE priority_order > $1
                  AND is_archived = false
-                 AND current_status != 'listo_entrega'`,
+                 AND current_status NOT IN ('listo_entrega', 'entregado')`,
                 [updatedOrder.priority_order]
             );
             // Clear priority from the finished order

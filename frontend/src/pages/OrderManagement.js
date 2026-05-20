@@ -257,7 +257,8 @@ const OrderManagement = () => {
         { value: 'procesado_fotopolimero', label: 'Procesado de fotopolimero' },
         { value: 'montaje', label: 'Montaje' },
         { value: 'correcion', label: 'Corrección' },
-        { value: 'listo_entrega', label: 'Listo para entrega' }
+        { value: 'listo_entrega', label: 'Remito' },
+        { value: 'entregado', label: 'Entregado' }
     ];
 
     return (

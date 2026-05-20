@@ -25,9 +25,14 @@ const StatusBadge = ({ status }) => {
             icon: FiEdit,
         },
         listo_entrega: {
-            label: 'Listo para entrega',
+            label: 'Remito',
             color: 'success',
             icon: FiCheckCircle,
+        },
+        entregado: {
+            label: 'Entregado',
+            color: 'success',
+            icon: FiSend,
         },
     };
 
