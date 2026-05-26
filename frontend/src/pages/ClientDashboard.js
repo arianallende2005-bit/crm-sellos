@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { ordersAPI, STATIC_URL } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { FiLogOut, FiSearch, FiPackage } from 'react-icons/fi';
+import { FiLogOut, FiSearch, FiPackage, FiGrid, FiList } from 'react-icons/fi';
 import StatusBadge from '../components/StatusBadge';
 import OrderTimeline from '../components/OrderTimeline';
 import NotificationBell from '../components/NotificationBell';
@@ -17,6 +17,7 @@ const ClientDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // all, active, archived
     const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState('grid'); // grid or table
 
     useEffect(() => {
         fetchOrders();
@@ -138,16 +139,33 @@ const ClientDashboard = () => {
                                 className={styles.searchInput}
                             />
                         </div>
+
+                        <div className={styles.viewToggle}>
+                            <button
+                                className={`${styles.toggleBtn} ${viewMode === 'grid' ? styles.activeToggle : ''}`}
+                                onClick={() => setViewMode('grid')}
+                                title="Vista de tarjetas"
+                            >
+                                <FiGrid size={18} />
+                            </button>
+                            <button
+                                className={`${styles.toggleBtn} ${viewMode === 'table' ? styles.activeToggle : ''}`}
+                                onClick={() => setViewMode('table')}
+                                title="Vista de lista / tabla"
+                            >
+                                <FiList size={18} />
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Orders Grid */}
+                    {/* Orders Content */}
                     {filteredOrders.length === 0 ? (
                         <div className={styles.emptyState}>
                             <FiPackage size={64} color="var(--gray-300)" />
                             <h3>No hay pedidos</h3>
                             <p>Aún no tienes pedidos registrados en el sistema.</p>
                         </div>
-                    ) : (
+                    ) : viewMode === 'grid' ? (
                         <div className={styles.ordersGrid}>
                             {filteredOrders.map(order => (
                                 <div
@@ -184,6 +202,62 @@ const ClientDashboard = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    ) : (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Pedido #</th>
+                                        <th>Producto</th>
+                                        <th>Nro. Remito</th>
+                                        <th>Fecha de Entrega</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredOrders.map(order => (
+                                        <tr key={order.id} onClick={() => handleViewOrder(order.id)} style={{ cursor: 'pointer' }}>
+                                            <td className={styles.orderIdCell}>#{order.id}</td>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    {order.image_url && (
+                                                        <img 
+                                                            src={order.image_url.startsWith('http') ? order.image_url : `${STATIC_URL}/${order.image_url}`} 
+                                                            alt={order.product_name} 
+                                                            className={styles.thumbnail}
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = 'https://placehold.co/600x400?text=Sello';
+                                                            }}
+                                                        />
+                                                    )}
+                                                    <strong>{order.product_name}</strong>
+                                                </div>
+                                            </td>
+                                            <td>{order.nro_remito || '-'}</td>
+                                            <td>
+                                                {order.delivery_date 
+                                                    ? order.delivery_date.split('T')[0].split('-').reverse().join('/') 
+                                                    : '-'
+                                                }
+                                            </td>
+                                            <td>
+                                                <StatusBadge status={order.current_status} />
+                                            </td>
+                                            <td onClick={(e) => e.stopPropagation()}>
+                                                <button 
+                                                    onClick={() => handleViewOrder(order.id)} 
+                                                    className="btn btn-secondary btn-sm"
+                                                >
+                                                    Ver detalles
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>
