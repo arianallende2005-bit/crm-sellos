@@ -77,7 +77,7 @@ const AdminDashboard = () => {
         { status: 'diseno_realizado', label: 'Diseño', color: 'cyan' },
         { status: 'preprensa', label: 'Preprensa', color: 'magenta' },
         { status: 'procesado_fotopolimero', label: 'Fotopolímero', color: 'yellow' },
-        { status: 'montaje', label: 'Montaje/Control', color: 'orange' },
+        { status: 'montaje', label: 'Montaje', color: 'orange' },
         { status: 'listo_entrega', label: 'Remito', color: 'gray' },
         { status: 'entregado', label: 'Entregado', color: 'green' },
     ];

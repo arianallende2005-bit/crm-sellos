@@ -20,7 +20,7 @@ const StatusBadge = ({ status }) => {
             icon: FiTool,
         },
         montaje: {
-            label: 'Montaje/Control',
+            label: 'Montaje',
             color: 'orange',
             icon: FiPackage,
         },

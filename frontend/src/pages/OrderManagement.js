@@ -256,7 +256,7 @@ const OrderManagement = () => {
         { value: 'diseno_realizado', label: 'Diseño' },
         { value: 'preprensa', label: 'Preprensa' },
         { value: 'procesado_fotopolimero', label: 'Fotopolímero' },
-        { value: 'montaje', label: 'Montaje/Control' },
+        { value: 'montaje', label: 'Montaje' },
         { value: 'listo_entrega', label: 'Remito' },
         { value: 'entregado', label: 'Entregado' }
     ];
@@ -334,7 +334,7 @@ const OrderManagement = () => {
                                 <th>Nro. Remito</th>
                                 <th>Fecha Creación</th>
                                 <th>Fecha de entrega</th>
-                                <th>Acciones</th>
+                                <th style={{ minWidth: '315px' }}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>

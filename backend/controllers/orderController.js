@@ -337,7 +337,7 @@ const updateOrderStatus = async (req, res) => {
             'diseno_realizado': 'Diseño',
             'preprensa': 'Preprensa',
             'procesado_fotopolimero': 'Fotopolímero',
-            'montaje': 'Montaje/Control',
+            'montaje': 'Montaje',
             'listo_entrega': 'Remito',
             'entregado': 'Entregado'
         };

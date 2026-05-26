@@ -14,7 +14,7 @@ const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
         { key: 'diseno_realizado', label: 'Diseño', icon: FiEdit },
         { key: 'preprensa', label: 'Preprensa', icon: FiLayers },
         { key: 'procesado_fotopolimero', label: 'Fotopolímero', icon: FiTool },
-        { key: 'montaje', label: 'Montaje/Control', icon: FiPackage },
+        { key: 'montaje', label: 'Montaje', icon: FiPackage },
         { key: 'listo_entrega', label: 'Remito', icon: FiCheckCircle },
         { key: 'entregado', label: 'Entregado', icon: FiSend },
     ];
