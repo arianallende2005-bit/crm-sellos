@@ -31,6 +31,9 @@ router.put('/:id/archive', requireAdmin, orderController.toggleArchiveStatus);
 // Update order details (admin only, with optional image upload)
 router.put('/:id', requireAdmin, upload.single('image'), handleUploadError, orderController.updateOrder);
 
+// Update order history notes (admin only)
+router.put('/history/:historyId/notes', requireAdmin, orderController.updateHistoryNotes);
+
 // Delete order (admin only)
 router.delete('/:id', requireAdmin, orderController.deleteOrder);
 

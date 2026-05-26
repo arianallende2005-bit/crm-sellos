@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import styles from './OrderTimeline.module.css';
 import { FiPackage, FiEdit, FiTool, FiCheckCircle, FiSend, FiCheck, FiFileText, FiLayers, FiShield } from 'react-icons/fi';
+import { ordersAPI } from '../services/api';
 
-const OrderTimeline = ({ order }) => {
+const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
+    const [editingId, setEditingId] = useState(null);
+    const [editNotes, setEditNotes] = useState('');
+    const [saving, setSaving] = useState(false);
+
     const stages = [
         { key: 'ingresado', label: 'Ingresado', icon: FiFileText },
         { key: 'diseno_realizado', label: 'Diseño', icon: FiEdit },
@@ -15,6 +20,31 @@ const OrderTimeline = ({ order }) => {
         { key: 'listo_entrega', label: 'Remito', icon: FiCheckCircle },
         { key: 'entregado', label: 'Entregado', icon: FiSend },
     ];
+
+    const handleStartEdit = (entry) => {
+        setEditingId(entry.id);
+        setEditNotes(entry.notes || '');
+    };
+
+    const handleSave = async (entryId) => {
+        if (!editNotes.trim() && !window.confirm('¿Desea guardar la nota vacía? Esto eliminará la nota actual.')) {
+            return;
+        }
+        
+        setSaving(true);
+        try {
+            await ordersAPI.updateHistoryNotes(entryId, editNotes);
+            if (onUpdate) {
+                onUpdate();
+            }
+            setEditingId(null);
+        } catch (error) {
+            console.error('Error saving history notes:', error);
+            alert('Error al guardar la nota. Intente nuevamente.');
+        } finally {
+            setSaving(false);
+        }
+    };
 
     // Create a map of status to history entry
     const historyMap = {};
@@ -66,8 +96,67 @@ const OrderTimeline = ({ order }) => {
                                             por {historyEntry.changed_by_name}
                                         </p>
                                     )}
-                                    {historyEntry.notes && (
-                                        <p className={styles.notes}>{historyEntry.notes}</p>
+                                    
+                                    {editingId === historyEntry.id ? (
+                                        <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                            <textarea
+                                                value={editNotes}
+                                                onChange={(e) => setEditNotes(e.target.value)}
+                                                className="input"
+                                                rows={2}
+                                                style={{ fontSize: '0.875rem', padding: '0.375rem', width: '100%', resize: 'vertical' }}
+                                                placeholder="Escriba una nota para este estado..."
+                                                disabled={saving}
+                                            />
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                <button
+                                                    onClick={() => setEditingId(null)}
+                                                    className="btn btn-secondary btn-sm"
+                                                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                                                    disabled={saving}
+                                                    type="button"
+                                                >
+                                                    Cancelar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSave(historyEntry.id)}
+                                                    className="btn btn-success btn-sm"
+                                                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                                                    disabled={saving}
+                                                    type="button"
+                                                >
+                                                    {saving ? 'Guardando...' : 'Guardar'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                            <p className={styles.notes} style={{ margin: 0, flex: 1 }}>
+                                                {historyEntry.notes || <em style={{ color: 'var(--gray-400)' }}>Sin notas</em>}
+                                            </p>
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => handleStartEdit(historyEntry)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        cursor: 'pointer',
+                                                        color: 'var(--primary)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        padding: '0.25rem',
+                                                        borderRadius: '4px',
+                                                        transition: 'background 0.2s'
+                                                    }}
+                                                    title="Editar nota de estado"
+                                                    type="button"
+                                                    onMouseOver={(e) => e.currentTarget.style.background = 'var(--gray-100)'}
+                                                    onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                                                >
+                                                    <FiEdit size={14} />
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             )}

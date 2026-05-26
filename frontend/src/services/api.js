@@ -74,6 +74,7 @@ export const ordersAPI = {
         headers: { 'Content-Type': 'multipart/form-data' },
     }),
     updateStatus: (id, status, notes, nro_remito, delivery_date) => api.put(`/orders/${id}/status`, { status, notes, nro_remito, delivery_date }),
+    updateHistoryNotes: (historyId, notes) => api.put(`/orders/history/${historyId}/notes`, { notes }),
     updatePriority: (id, priority_order) => api.put(`/orders/${id}/priority`, { priority_order }),
     toggleArchive: (id, is_archived) => api.put(`/orders/${id}/archive`, { is_archived }),
     getStats: () => api.get('/orders/stats'),

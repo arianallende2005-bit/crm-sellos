@@ -689,7 +689,46 @@ const toggleArchiveStatus = async (req, res) => {
             message: 'Error al cambiar estado de archivo.'
         });
     }
-}
+};
+
+/**
+ * Update order history notes
+ * PUT /api/orders/history/:historyId/notes
+ */
+const updateHistoryNotes = async (req, res) => {
+    try {
+        const { historyId } = req.params;
+        const { notes } = req.body;
+
+        const result = await pool.query(
+            `UPDATE order_history 
+             SET notes = $1 
+             WHERE id = $2 
+             RETURNING *`,
+            [notes === '' ? null : notes, historyId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Registro de historial no encontrado.'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Nota de historial actualizada exitosamente.',
+            historyEntry: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Update history notes error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar la nota de historial.'
+        });
+    }
+};
 
 module.exports = {
     getAllOrders,
@@ -700,5 +739,6 @@ module.exports = {
     updateOrder,
     getOrderStats,
     deleteOrder,
-    toggleArchiveStatus
+    toggleArchiveStatus,
+    updateHistoryNotes
 };

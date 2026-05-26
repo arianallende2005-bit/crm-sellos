@@ -193,7 +193,7 @@ const ClientDashboard = () => {
                                             <p className={styles.nroRemito}><strong>Nro. Remito:</strong> {order.nro_remito}</p>
                                         )}
                                         {order.delivery_date && (
-                                            <p className={styles.nroRemito}><strong>Fecha de entrega estimada:</strong> {order.delivery_date.split('T')[0].split('-').reverse().join('/')}</p>
+                                            <p className={styles.nroRemito}><strong>Fecha de entrega:</strong> {order.delivery_date.split('T')[0].split('-').reverse().join('/')}</p>
                                         )}
                                         <StatusBadge status={order.current_status} />
                                         <p className={styles.orderDate}>
@@ -309,7 +309,7 @@ const ClientDashboard = () => {
                                     )}
                                     {selectedOrder.delivery_date && (
                                         <p style={{ marginTop: 'var(--spacing-sm)' }}>
-                                            <strong>Fecha de entrega estimada:</strong> {selectedOrder.delivery_date.split('T')[0].split('-').reverse().join('/')}
+                                            <strong>Fecha de entrega:</strong> {selectedOrder.delivery_date.split('T')[0].split('-').reverse().join('/')}
                                         </p>
                                     )}
                                 </div>

@@ -457,7 +457,7 @@ const OrderManagement = () => {
                             </div>
 
                             <div>
-                                <label className="label">Fecha de entrega (estimada)</label>
+                                <label className="label">Fecha de entrega</label>
                                 <input
                                     type="date"
                                     className="input"
@@ -529,7 +529,7 @@ const OrderManagement = () => {
                             )}
 
                             <div>
-                                <label className="label">Fecha de entrega (estimada)</label>
+                                <label className="label">Fecha de entrega</label>
                                 <input
                                     type="date"
                                     className="input"
@@ -584,7 +584,7 @@ const OrderManagement = () => {
                             </div>
 
                             <div>
-                                <label className="label">Fecha de entrega (estimada)</label>
+                                <label className="label">Fecha de entrega</label>
                                 <input
                                     type="date"
                                     className="input"
@@ -632,7 +632,7 @@ const OrderManagement = () => {
                         )}
                         {selectedOrder.delivery_date && (
                             <p className={styles.orderInfo}>
-                                <strong>Fecha de entrega estimada:</strong> {selectedOrder.delivery_date.split('T')[0].split('-').reverse().join('/')}
+                                <strong>Fecha de entrega:</strong> {selectedOrder.delivery_date.split('T')[0].split('-').reverse().join('/')}
                             </p>
                         )}
 
@@ -646,12 +646,26 @@ const OrderManagement = () => {
                                         e.target.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
                                     }}
                                 />
+                                <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+                                    <a
+                                        href={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: 'var(--primary)', fontWeight: '500', textDecoration: 'underline', fontSize: '0.875rem' }}
+                                    >
+                                        Ver imagen completa
+                                    </a>
+                                </div>
                             </div>
                         )}
 
                         <div style={{ marginTop: 'var(--spacing-xl)' }}>
                             <h3>Historial del Pedido</h3>
-                            <OrderTimeline order={selectedOrder} />
+                            <OrderTimeline 
+                                order={selectedOrder} 
+                                isAdmin={true} 
+                                onUpdate={() => handleViewOrder(selectedOrder.id)} 
+                            />
                         </div>
 
                         <div className={styles.modalActions}>
