@@ -17,7 +17,8 @@ CREATE TYPE order_status AS ENUM (
   'procesado_fotopolimero',
   'montaje',
   'correcion',
-  'listo_entrega'
+  'listo_entrega',
+  'entregado'
 );
 
 -- Users table (both admins and clients)
