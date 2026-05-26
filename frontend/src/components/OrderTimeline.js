@@ -2,14 +2,16 @@ import React from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import styles from './OrderTimeline.module.css';
-import { FiPackage, FiEdit, FiTool, FiCheckCircle, FiSend, FiCheck } from 'react-icons/fi';
+import { FiPackage, FiEdit, FiTool, FiCheckCircle, FiSend, FiCheck, FiFileText, FiLayers, FiShield } from 'react-icons/fi';
 
 const OrderTimeline = ({ order }) => {
     const stages = [
-        { key: 'diseno_realizado', label: 'Diseño realizado', icon: FiEdit },
-        { key: 'procesado_fotopolimero', label: 'Procesado', icon: FiTool },
-        { key: 'montaje', label: 'Montaje', icon: FiTool },
-        { key: 'correcion', label: 'Corrección', icon: FiEdit },
+        { key: 'ingresado', label: 'Ingresado', icon: FiFileText },
+        { key: 'diseno_realizado', label: 'Diseño', icon: FiEdit },
+        { key: 'preprensa', label: 'Preprensa', icon: FiLayers },
+        { key: 'procesado_fotopolimero', label: 'Fotopolímero', icon: FiTool },
+        { key: 'montaje', label: 'Montaje', icon: FiPackage },
+        { key: 'correcion', label: 'Control de Calidad', icon: FiShield },
         { key: 'listo_entrega', label: 'Remito', icon: FiCheckCircle },
         { key: 'entregado', label: 'Entregado', icon: FiSend },
     ];

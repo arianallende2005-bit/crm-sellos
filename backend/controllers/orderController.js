@@ -212,7 +212,7 @@ const createOrder = async (req, res) => {
         // Insert order
         const orderResult = await client.query(
             `INSERT INTO orders (client_id, product_name, image_url, delivery_date, current_status)
-       VALUES ($1, $2, $3, $4, 'diseno_realizado')
+       VALUES ($1, $2, $3, $4, 'ingresado')
        RETURNING *`,
             [client_id, product_name, imagePath, delivery_date || null]
         );
@@ -222,7 +222,7 @@ const createOrder = async (req, res) => {
         // Insert initial history record
         await client.query(
             `INSERT INTO order_history (order_id, status, changed_by)
-       VALUES ($1, 'diseno_realizado', $2)`,
+       VALUES ($1, 'ingresado', $2)`,
             [newOrder.id, userId]
         );
 
@@ -277,7 +277,9 @@ const updateOrderStatus = async (req, res) => {
         const userId = req.user.id;
 
         const validStatuses = [
+            'ingresado',
             'diseno_realizado',
+            'preprensa',
             'procesado_fotopolimero',
             'montaje',
             'correcion',
@@ -334,10 +336,12 @@ const updateOrderStatus = async (req, res) => {
 
         // Create notification for client
         const statusMessages = {
-            'diseno_realizado': 'Diseño realizado',
-            'procesado_fotopolimero': 'Procesado de fotopolímero',
+            'ingresado': 'Ingresado',
+            'diseno_realizado': 'Diseño',
+            'preprensa': 'Preprensa',
+            'procesado_fotopolimero': 'Fotopolímero',
             'montaje': 'Montaje',
-            'correcion': 'Corrección',
+            'correcion': 'Control de Calidad',
             'listo_entrega': 'Remito',
             'entregado': 'Entregado'
         };

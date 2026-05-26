@@ -253,10 +253,12 @@ const OrderManagement = () => {
     };
 
     const statuses = [
-        { value: 'diseno_realizado', label: 'Diseño realizado' },
-        { value: 'procesado_fotopolimero', label: 'Procesado de fotopolimero' },
+        { value: 'ingresado', label: 'Ingresado' },
+        { value: 'diseno_realizado', label: 'Diseño' },
+        { value: 'preprensa', label: 'Preprensa' },
+        { value: 'procesado_fotopolimero', label: 'Fotopolímero' },
         { value: 'montaje', label: 'Montaje' },
-        { value: 'correcion', label: 'Corrección' },
+        { value: 'correcion', label: 'Control de Calidad' },
         { value: 'listo_entrega', label: 'Remito' },
         { value: 'entregado', label: 'Entregado' }
     ];
