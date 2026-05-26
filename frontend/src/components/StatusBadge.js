@@ -4,11 +4,6 @@ import { FiPackage, FiEdit, FiTool, FiCheckCircle, FiSend, FiFileText, FiLayers,
 
 const StatusBadge = ({ status }) => {
     const statusConfig = {
-        ingresado: {
-            label: 'Ingresado',
-            color: 'info',
-            icon: FiFileText,
-        },
         diseno_realizado: {
             label: 'Diseño',
             color: 'info',
@@ -21,22 +16,17 @@ const StatusBadge = ({ status }) => {
         },
         procesado_fotopolimero: {
             label: 'Fotopolímero',
-            color: 'primary',
+            color: 'purple',
             icon: FiTool,
         },
         montaje: {
-            label: 'Montaje',
+            label: 'Montaje/Control',
             color: 'warning',
             icon: FiPackage,
         },
-        correcion: {
-            label: 'Control de Calidad',
-            color: 'warning',
-            icon: FiShield,
-        },
         listo_entrega: {
             label: 'Remito',
-            color: 'success',
+            color: 'teal',
             icon: FiCheckCircle,
         },
         entregado: {
@@ -46,7 +36,7 @@ const StatusBadge = ({ status }) => {
         },
     };
 
-    const config = statusConfig[status] || statusConfig.ingresado;
+    const config = statusConfig[status] || statusConfig.diseno_realizado;
     const Icon = config.icon;
 
     return (

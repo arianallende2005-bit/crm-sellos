@@ -169,9 +169,19 @@
     color: #4338ca;
 }
 
+.statCard.purple {
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    color: #6b21a8;
+}
+
 .statCard.warning {
     background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
     color: #92400e;
+}
+
+.statCard.teal {
+    background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%);
+    color: #0f766e;
 }
 
 .statCard.success {

@@ -20,9 +20,19 @@
     color: #4338ca;
 }
 
+.purple {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
 .warning {
     background: #fef3c7;
     color: #92400e;
+}
+
+.teal {
+    background: #ccfbf1;
+    color: #0f766e;
 }
 
 .success {

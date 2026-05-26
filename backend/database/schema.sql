@@ -13,12 +13,10 @@ DROP TYPE IF EXISTS order_status CASCADE;
 -- Create ENUMs for user roles and order statuses
 CREATE TYPE user_role AS ENUM ('admin', 'cliente');
 CREATE TYPE order_status AS ENUM (
-  'ingresado',
   'diseno_realizado',
   'preprensa',
   'procesado_fotopolimero',
   'montaje',
-  'correcion',
   'listo_entrega',
   'entregado'
 );
@@ -44,7 +42,7 @@ CREATE TABLE orders (
   image_url VARCHAR(500), -- Path to uploaded image
   nro_remito VARCHAR(50), -- Remittance number / Tracking number
   delivery_date DATE, -- Estimated delivery date
-  current_status order_status NOT NULL DEFAULT 'ingresado',
+  current_status order_status NOT NULL DEFAULT 'diseno_realizado',
   is_archived BOOLEAN DEFAULT false,
   archived_date TIMESTAMP, -- When order was archived
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

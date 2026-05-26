@@ -253,12 +253,10 @@ const OrderManagement = () => {
     };
 
     const statuses = [
-        { value: 'ingresado', label: 'Ingresado' },
         { value: 'diseno_realizado', label: 'Diseño' },
         { value: 'preprensa', label: 'Preprensa' },
         { value: 'procesado_fotopolimero', label: 'Fotopolímero' },
-        { value: 'montaje', label: 'Montaje' },
-        { value: 'correcion', label: 'Control de Calidad' },
+        { value: 'montaje', label: 'Montaje/Control' },
         { value: 'listo_entrega', label: 'Remito' },
         { value: 'entregado', label: 'Entregado' }
     ];
@@ -637,16 +635,18 @@ const OrderManagement = () => {
                         )}
 
                         {selectedOrder.image_url && (
-                            <div className={styles.orderImage}>
-                                <img 
-                                    src={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`} 
-                                    alt={selectedOrder.product_name} 
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
-                                    }}
-                                />
-                                <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+                            <>
+                                <div className={styles.orderImage}>
+                                    <img 
+                                        src={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`} 
+                                        alt={selectedOrder.product_name} 
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ textAlign: 'center', marginTop: '-0.5rem', marginBottom: '1.5rem' }}>
                                     <a
                                         href={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`}
                                         target="_blank"
@@ -656,7 +656,7 @@ const OrderManagement = () => {
                                         Ver imagen completa
                                     </a>
                                 </div>
-                            </div>
+                            </>
                         )}
 
                         <div style={{ marginTop: 'var(--spacing-xl)' }}>
