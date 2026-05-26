@@ -638,7 +638,14 @@ const OrderManagement = () => {
 
                         {selectedOrder.image_url && (
                             <div className={styles.orderImage}>
-                                <img src={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`} alt={selectedOrder.product_name} />
+                                <img 
+                                    src={selectedOrder.image_url.startsWith('http') ? selectedOrder.image_url : `${STATIC_URL}/${selectedOrder.image_url}`} 
+                                    alt={selectedOrder.product_name} 
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
+                                    }}
+                                />
                             </div>
                         )}
 
