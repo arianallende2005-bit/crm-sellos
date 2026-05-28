@@ -19,8 +19,8 @@ router.get('/:id', orderController.getOrderById);
 // Create new order (admin only, with image upload)
 router.post('/', requireAdmin, upload.single('image'), handleUploadError, orderController.createOrder);
 
-// Update order status (admin only)
-router.put('/:id/status', requireAdmin, orderController.updateOrderStatus);
+// Update order status (admin only, with optional image upload)
+router.put('/:id/status', requireAdmin, upload.single('image'), handleUploadError, orderController.updateOrderStatus);
 
 // Update order priority (admin only)
 router.put('/:id/priority', requireAdmin, orderController.updateOrderPriority);
@@ -33,6 +33,9 @@ router.put('/:id', requireAdmin, upload.single('image'), handleUploadError, orde
 
 // Update order history notes (admin only)
 router.put('/history/:historyId/notes', requireAdmin, orderController.updateHistoryNotes);
+
+// Update or create order history notes by order ID and status (admin only)
+router.put('/:orderId/history/:status/notes', requireAdmin, orderController.updateOrCreateHistoryNotes);
 
 // Delete order (admin only)
 router.delete('/:id', requireAdmin, orderController.deleteOrder);

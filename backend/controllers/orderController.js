@@ -286,10 +286,63 @@ const updateOrderStatus = async (req, res) => {
         ];
 
         if (!validStatuses.includes(status)) {
+            if (req.file) {
+                deleteImage(req.file.path);
+            }
             return res.status(400).json({
                 success: false,
                 message: 'Estado inválido.'
             });
+        }
+
+        let imagePath = null;
+
+        // Process uploaded image if present
+        if (req.file) {
+            // Get old image path to delete it
+            const oldOrderResult = await client.query('SELECT image_url FROM orders WHERE id = $1', [id]);
+            if (oldOrderResult.rows.length > 0 && oldOrderResult.rows[0].image_url) {
+                const oldUrl = oldOrderResult.rows[0].image_url;
+                if (oldUrl && oldUrl.includes('supabase.co')) {
+                    const parts = oldUrl.split('/orders/');
+                    if (parts.length > 1) {
+                        const fileName = parts[1];
+                        await supabase.storage.from('images').remove([`orders/${fileName}`]);
+                    }
+                } else if (oldUrl) {
+                    deleteImage(oldUrl); // legacy local image
+                }
+            }
+
+            const localCompressedPath = await compressImage(req.file.path);
+            const fileBuffer = fs.readFileSync(localCompressedPath);
+            const fileName = `${Date.now()}-${path.basename(localCompressedPath)}`;
+            
+            const { data, error } = await supabase.storage
+                .from('images')
+                .upload(`orders/${fileName}`, fileBuffer, {
+                    contentType: 'image/webp',
+                    upsert: true
+                });
+
+            if (error) {
+                console.error("Supabase upload error:", error);
+                throw new Error("Error subiendo la imagen a Supabase.");
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('images')
+                .getPublicUrl(`orders/${fileName}`);
+
+            imagePath = publicUrlData.publicUrl;
+
+            // Cleanup local files
+            try {
+                fs.unlinkSync(req.file.path);
+                fs.unlinkSync(localCompressedPath);
+            } catch (err) {
+                console.error("Error deleting local files:", err);
+            }
         }
 
         // Start transaction
@@ -306,12 +359,16 @@ const updateOrderStatus = async (req, res) => {
             setQuery += `, delivery_date = $${queryParams.length + 1}`;
             queryParams.push(delivery_date === '' ? null : delivery_date);
         }
+        if (imagePath) {
+            setQuery += `, image_url = $${queryParams.length + 1}`;
+            queryParams.push(imagePath);
+        }
 
         const orderResult = await client.query(
             `UPDATE orders 
-       ${setQuery}
-       WHERE id = $2
-       RETURNING *`,
+             ${setQuery}
+             WHERE id = $2
+             RETURNING *`,
             queryParams
         );
 
@@ -328,7 +385,7 @@ const updateOrderStatus = async (req, res) => {
         // Insert history record
         await client.query(
             `INSERT INTO order_history (order_id, status, changed_by, notes)
-       VALUES ($1, $2, $3, $4)`,
+             VALUES ($1, $2, $3, $4)`,
             [id, status, userId, notes || null]
         );
 
@@ -344,7 +401,7 @@ const updateOrderStatus = async (req, res) => {
 
         await client.query(
             `INSERT INTO notifications (user_id, order_id, message)
-       VALUES ($1, $2, $3)`,
+             VALUES ($1, $2, $3)`,
             [
                 updatedOrder.client_id,
                 id,
@@ -382,6 +439,12 @@ const updateOrderStatus = async (req, res) => {
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Update order status error:', error);
+        
+        // Delete uploaded file if error occurs
+        if (req.file) {
+            deleteImage(req.file.path);
+        }
+        
         res.status(500).json({
             success: false,
             message: 'Error al actualizar estado del pedido.'
@@ -726,6 +789,57 @@ const updateHistoryNotes = async (req, res) => {
     }
 };
 
+/**
+ * Update or create order history notes by order ID and status
+ * PUT /api/orders/:orderId/history/:status/notes
+ */
+const updateOrCreateHistoryNotes = async (req, res) => {
+    try {
+        const { orderId, status } = req.params;
+        const { notes } = req.body;
+        const userId = req.user.id;
+
+        // Verify if history record exists for this order and status
+        const checkResult = await pool.query(
+            `SELECT id FROM order_history WHERE order_id = $1 AND status = $2 LIMIT 1`,
+            [orderId, status]
+        );
+
+        let result;
+        if (checkResult.rows.length > 0) {
+            // Update existing entry
+            result = await pool.query(
+                `UPDATE order_history 
+                 SET notes = $1 
+                 WHERE id = $2 
+                 RETURNING *`,
+                [notes === '' ? null : notes, checkResult.rows[0].id]
+            );
+        } else {
+            // Insert new entry for this status and order
+            result = await pool.query(
+                `INSERT INTO order_history (order_id, status, changed_by, notes)
+                 VALUES ($1, $2, $3, $4)
+                 RETURNING *`,
+                [orderId, status, userId, notes === '' ? null : notes]
+            );
+        }
+
+        res.json({
+            success: true,
+            message: 'Nota de historial actualizada exitosamente.',
+            historyEntry: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Update history notes error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar la nota de historial.'
+        });
+    }
+};
+
 module.exports = {
     getAllOrders,
     getOrderById,
@@ -736,5 +850,6 @@ module.exports = {
     getOrderStats,
     deleteOrder,
     toggleArchiveStatus,
-    updateHistoryNotes
+    updateHistoryNotes,
+    updateOrCreateHistoryNotes
 };

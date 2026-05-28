@@ -6,22 +6,22 @@ const StatusBadge = ({ status }) => {
     const statusConfig = {
         diseno_realizado: {
             label: 'Diseño',
-            color: 'cyan',
+            color: 'info',
             icon: FiEdit,
         },
         preprensa: {
             label: 'Preprensa',
-            color: 'magenta',
+            color: 'primary',
             icon: FiLayers,
         },
         procesado_fotopolimero: {
             label: 'Fotopolímero',
-            color: 'yellow',
+            color: 'purple',
             icon: FiTool,
         },
         montaje: {
             label: 'Montaje',
-            color: 'orange',
+            color: 'warning',
             icon: FiPackage,
         },
         listo_entrega: {
@@ -31,7 +31,7 @@ const StatusBadge = ({ status }) => {
         },
         entregado: {
             label: 'Entregado',
-            color: 'green',
+            color: 'success',
             icon: FiSend,
         },
     };

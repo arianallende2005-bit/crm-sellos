@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ordersAPI, usersAPI, STATIC_URL } from '../services/api';
-import { FiArrowLeft, FiPlus, FiUpload, FiTrash2, FiSearch, FiDownload, FiArchive, FiEdit2 } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiUpload, FiTrash2, FiSearch, FiDownload, FiArchive, FiEdit2, FiEye, FiCheckSquare } from 'react-icons/fi';
 import StatusBadge from '../components/StatusBadge';
 import OrderTimeline from '../components/OrderTimeline';
 import styles from './OrderManagement.module.css';
@@ -26,7 +26,8 @@ const OrderManagement = () => {
         status: '',
         notes: '',
         nro_remito: '',
-        delivery_date: ''
+        delivery_date: '',
+        image: null
     });
     const [editFormData, setEditFormData] = useState({
         id: '',
@@ -128,12 +129,23 @@ const OrderManagement = () => {
     const handleUpdateStatus = async (e) => {
         e.preventDefault();
 
+        const formData = new FormData();
+        formData.append('status', updateData.status);
+        formData.append('notes', updateData.notes);
+        formData.append('nro_remito', updateData.nro_remito);
+        if (updateData.delivery_date) {
+            formData.append('delivery_date', updateData.delivery_date);
+        }
+        if (updateData.image) {
+            formData.append('image', updateData.image);
+        }
+
         try {
-            await ordersAPI.updateStatus(selectedOrder.id, updateData.status, updateData.notes, updateData.nro_remito, updateData.delivery_date);
+            await ordersAPI.updateStatus(selectedOrder.id, formData);
             alert('Estado actualizado exitosamente');
             fetchOrders();
             setShowUpdateModal(false);
-            setUpdateData({ status: '', notes: '', nro_remito: '', delivery_date: '' });
+            setUpdateData({ status: '', notes: '', nro_remito: '', delivery_date: '', image: null });
         } catch (error) {
             alert('Error al actualizar estado');
         }
@@ -208,7 +220,13 @@ const OrderManagement = () => {
 
     const openUpdateModal = (order) => {
         setSelectedOrder(order);
-        setUpdateData({ status: order.current_status, notes: '', nro_remito: order.nro_remito || '', delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : '' });
+        setUpdateData({
+            status: order.current_status,
+            notes: '',
+            nro_remito: order.nro_remito || '',
+            delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : '',
+            image: null
+        });
         setShowUpdateModal(true);
     };
 
@@ -334,7 +352,7 @@ const OrderManagement = () => {
                                 <th>Nro. Remito</th>
                                 <th>Fecha Creación</th>
                                 <th>Fecha de entrega</th>
-                                <th style={{ minWidth: '315px' }}>Acciones</th>
+                                <th style={{ minWidth: '200px' }}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -362,47 +380,45 @@ const OrderManagement = () => {
                                     <td>
                                         <div className={styles.actions}>
                                             <button
-                                                className="btn btn-secondary btn-sm"
+                                                className={styles.actionBtn}
                                                 onClick={() => openEditModal(order)}
                                                 title="Editar Pedido"
                                             >
-                                                <FiEdit2 size={14} /> Editar
+                                                <FiEdit2 size={16} />
                                             </button>
                                             <button
+                                                className={styles.actionBtn}
                                                 onClick={() => handleViewOrder(order.id)}
-                                                className="btn btn-secondary"
-                                                style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
+                                                title="Ver Detalles"
                                             >
-                                                Ver
+                                                <FiEye size={16} />
                                             </button>
                                             <button
+                                                className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
                                                 onClick={() => openUpdateModal(order)}
-                                                className="btn btn-primary"
-                                                style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
+                                                title="Actualizar Estado"
                                             >
-                                                Actualizar
+                                                <FiCheckSquare size={16} />
                                             </button>
                                             <button
+                                                className={styles.actionBtn}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleToggleArchive(order);
                                                 }}
-                                                className="btn btn-secondary"
                                                 title={order.is_archived ? "Desarchivar" : "Archivar"}
-                                                style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem' }}
                                             >
-                                                <FiArchive />
+                                                <FiArchive size={16} />
                                             </button>
                                             <button
+                                                className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleDeleteOrder(order.id);
                                                 }}
-                                                className="btn btn-danger"
                                                 title="Eliminar Pedido"
-                                                style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem', backgroundColor: '#dc2626', color: 'white' }}
                                             >
-                                                <FiTrash2 />
+                                                <FiTrash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -545,6 +561,17 @@ const OrderManagement = () => {
                                     rows={3}
                                     placeholder="Agregar información adicional sobre este cambio..."
                                 />
+                            </div>
+
+                            <div>
+                                <label className="label">Agregar/Actualizar Imagen (opcional)</label>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={e => setUpdateData({ ...updateData, image: e.target.files[0] })}
+                                    className="input"
+                                />
+                                <small style={{ color: 'var(--text-light)' }}>Deje vacío si no desea agregar o cambiar la imagen actual.</small>
                             </div>
 
                             <div className={styles.modalActions}>

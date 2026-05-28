@@ -74,12 +74,12 @@ const AdminDashboard = () => {
     };
 
     const statusCards = [
-        { status: 'diseno_realizado', label: 'Diseño', color: 'cyan' },
-        { status: 'preprensa', label: 'Preprensa', color: 'magenta' },
-        { status: 'procesado_fotopolimero', label: 'Fotopolímero', color: 'yellow' },
-        { status: 'montaje', label: 'Montaje', color: 'orange' },
+        { status: 'diseno_realizado', label: 'Diseño', color: 'info' },
+        { status: 'preprensa', label: 'Preprensa', color: 'primary' },
+        { status: 'procesado_fotopolimero', label: 'Fotopolímero', color: 'purple' },
+        { status: 'montaje', label: 'Montaje', color: 'warning' },
         { status: 'listo_entrega', label: 'Remito', color: 'gray' },
-        { status: 'entregado', label: 'Entregado', color: 'green' },
+        { status: 'entregado', label: 'Entregado', color: 'success' },
     ];
 
     if (loading) {

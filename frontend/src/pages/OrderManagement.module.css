@@ -60,7 +60,52 @@
 
 .actions {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: 6px;
+    align-items: center;
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background-color: var(--gray-50);
+    border: 1px solid var(--border);
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+    background-color: var(--gray-100);
+    color: var(--text);
+    border-color: var(--gray-300);
+}
+
+.actionBtnPrimary {
+    background-color: #f5f3ff;
+    color: #6d28d9;
+    border-color: #ddd6fe;
+}
+
+.actionBtnPrimary:hover {
+    background-color: #edd1ff;
+    color: #5b21b6;
+    border-color: #c084fc;
+}
+
+.actionBtnDelete {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.actionBtnDelete:hover {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-color: #fca5a5;
 }
 
 .archived {

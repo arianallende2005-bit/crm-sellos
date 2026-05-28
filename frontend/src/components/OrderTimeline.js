@@ -6,7 +6,7 @@ import { FiPackage, FiEdit, FiTool, FiCheckCircle, FiSend, FiCheck, FiFileText, 
 import { ordersAPI } from '../services/api';
 
 const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
-    const [editingId, setEditingId] = useState(null);
+    const [editingStageKey, setEditingStageKey] = useState(null);
     const [editNotes, setEditNotes] = useState('');
     const [saving, setSaving] = useState(false);
 
@@ -19,23 +19,18 @@ const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
         { key: 'entregado', label: 'Entregado', icon: FiSend },
     ];
 
-    const handleStartEdit = (entry) => {
-        setEditingId(entry.id);
-        setEditNotes(entry.notes || '');
-    };
-
-    const handleSave = async (entryId) => {
+    const handleSave = async (stageKey) => {
         if (!editNotes.trim() && !window.confirm('¿Desea guardar la nota vacía? Esto eliminará la nota actual.')) {
             return;
         }
         
         setSaving(true);
         try {
-            await ordersAPI.updateHistoryNotes(entryId, editNotes);
+            await ordersAPI.updateHistoryNotes(order.id, stageKey, editNotes);
             if (onUpdate) {
                 onUpdate();
             }
-            setEditingId(null);
+            setEditingStageKey(null);
         } catch (error) {
             console.error('Error saving history notes:', error);
             alert('Error al guardar la nota. Intente nuevamente.');
@@ -84,18 +79,26 @@ const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
                             <h4 className={isCompleted ? styles.completedText : styles.pendingText}>
                                 {stage.label}
                             </h4>
-                            {historyEntry && (
+                            {isCompleted && (
                                 <div className={styles.timelineDetails}>
-                                    <p className={styles.timestamp}>
-                                        {format(new Date(historyEntry.changed_at), "dd/MM/yyyy 'a las' HH:mm", { locale: es })}
-                                    </p>
-                                    {historyEntry.changed_by_name && (
-                                        <p className={styles.changedBy}>
-                                            por {historyEntry.changed_by_name}
+                                    {historyEntry ? (
+                                        <>
+                                            <p className={styles.timestamp}>
+                                                {format(new Date(historyEntry.changed_at), "dd/MM/yyyy 'a las' HH:mm", { locale: es })}
+                                            </p>
+                                            {historyEntry.changed_by_name && (
+                                                <p className={styles.changedBy}>
+                                                    por {historyEntry.changed_by_name}
+                                                </p>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <p className={styles.timestamp} style={{ fontStyle: 'italic', color: 'var(--gray-400)' }}>
+                                            Completado (historial anterior)
                                         </p>
                                     )}
                                     
-                                    {editingId === historyEntry.id ? (
+                                    {editingStageKey === stage.key ? (
                                         <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                             <textarea
                                                 value={editNotes}
@@ -108,7 +111,7 @@ const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
                                             />
                                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                 <button
-                                                    onClick={() => setEditingId(null)}
+                                                    onClick={() => setEditingStageKey(null)}
                                                     className="btn btn-secondary btn-sm"
                                                     style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
                                                     disabled={saving}
@@ -117,7 +120,7 @@ const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
                                                     Cancelar
                                                 </button>
                                                 <button
-                                                    onClick={() => handleSave(historyEntry.id)}
+                                                    onClick={() => handleSave(stage.key)}
                                                     className="btn btn-success btn-sm"
                                                     style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
                                                     disabled={saving}
@@ -130,11 +133,14 @@ const OrderTimeline = ({ order, isAdmin, onUpdate }) => {
                                     ) : (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
                                             <p className={styles.notes} style={{ margin: 0, flex: 1 }}>
-                                                {historyEntry.notes || <em style={{ color: 'var(--gray-400)' }}>Sin notas</em>}
+                                                {historyEntry?.notes || <em style={{ color: 'var(--gray-400)' }}>Sin notas</em>}
                                             </p>
                                             {isAdmin && (
                                                 <button
-                                                    onClick={() => handleStartEdit(historyEntry)}
+                                                    onClick={() => {
+                                                        setEditingStageKey(stage.key);
+                                                        setEditNotes(historyEntry?.notes || '');
+                                                    }}
                                                     style={{
                                                         background: 'none',
                                                         border: 'none',
