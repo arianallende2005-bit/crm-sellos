@@ -64,6 +64,10 @@ export const AuthProvider = ({ children }) => {
         return user?.role === 'admin';
     };
 
+    const isOperator = () => {
+        return user?.role === 'operador';
+    };
+
     const isClient = () => {
         return user?.role === 'cliente';
     };
@@ -75,6 +79,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         isAdmin,
+        isOperator,
         isClient,
         setUser
     };

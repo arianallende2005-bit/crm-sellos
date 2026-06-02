@@ -202,18 +202,20 @@ const AdminDashboard = () => {
             <div className={styles.container}>
                 {/* Navigation Cards */}
                 <div className={styles.navCards}>
-                    <button
-                        className={styles.navCard}
-                        onClick={() => navigate('/admin/clients')}
-                    >
-                        <div className={`${styles.navIcon} ${styles.iconBlue}`}>
-                            <FiUsers size={24} />
-                        </div>
-                        <div>
-                            <h3>Gestión de Clientes</h3>
-                            <p>{stats?.totalClients || 0} clientes activos</p>
-                        </div>
-                    </button>
+                    {user?.role === 'admin' && (
+                        <button
+                            className={styles.navCard}
+                            onClick={() => navigate('/admin/clients')}
+                        >
+                            <div className={`${styles.navIcon} ${styles.iconBlue}`}>
+                                <FiUsers size={24} />
+                            </div>
+                            <div>
+                                <h3>Gestión de Clientes</h3>
+                                <p>{stats?.totalClients || 0} clientes activos</p>
+                            </div>
+                        </button>
+                    )}
 
                     <button
                         className={styles.navCard}

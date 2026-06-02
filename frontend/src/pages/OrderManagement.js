@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { ordersAPI, usersAPI, STATIC_URL } from '../services/api';
 import { FiArrowLeft, FiPlus, FiUpload, FiTrash2, FiSearch, FiDownload, FiArchive, FiEdit2, FiEye, FiCheckSquare } from 'react-icons/fi';
 import StatusBadge from '../components/StatusBadge';
@@ -9,7 +10,9 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const OrderManagement = () => {
+    const { user } = useAuth();
     const navigate = useNavigate();
+    const isAdmin = user?.role === 'admin';
     const [orders, setOrders] = useState([]);
     const [clients, setClients] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -299,13 +302,15 @@ const OrderManagement = () => {
                             <FiDownload size={18} />
                             PDF
                         </button>
-                        <button
-                            onClick={() => setShowCreateModal(true)}
-                            className="btn btn-primary"
-                        >
-                            <FiPlus size={18} />
-                            Nuevo Pedido
-                        </button>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setShowCreateModal(true)}
+                                className="btn btn-primary"
+                            >
+                                <FiPlus size={18} />
+                                Nuevo Pedido
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -369,6 +374,7 @@ const OrderManagement = () => {
                                             value={order.priority_order || ''}
                                             onChange={(e) => handlePriorityChange(order.id, e.target.value)}
                                             placeholder="-"
+                                            disabled={!isAdmin}
                                         />
                                     </td>
                                     <td><strong>{order.product_name}</strong></td>
@@ -381,13 +387,15 @@ const OrderManagement = () => {
                                     <td>{order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                     <td>
                                         <div className={styles.actions}>
-                                            <button
-                                                className={styles.actionBtn}
-                                                onClick={() => openEditModal(order)}
-                                                title="Editar Pedido"
-                                            >
-                                                <FiEdit2 size={16} />
-                                            </button>
+                                            {isAdmin && (
+                                                <button
+                                                    className={styles.actionBtn}
+                                                    onClick={() => openEditModal(order)}
+                                                    title="Editar Pedido"
+                                                >
+                                                    <FiEdit2 size={16} />
+                                                </button>
+                                            )}
                                             <button
                                                 className={styles.actionBtn}
                                                 onClick={() => handleViewOrder(order.id)}
@@ -412,16 +420,18 @@ const OrderManagement = () => {
                                             >
                                                 <FiArchive size={16} />
                                             </button>
-                                            <button
-                                                className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteOrder(order.id);
-                                                }}
-                                                title="Eliminar Pedido"
-                                            >
-                                                <FiTrash2 size={16} />
-                                            </button>
+                                            {isAdmin && (
+                                                <button
+                                                    className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteOrder(order.id);
+                                                    }}
+                                                    title="Eliminar Pedido"
+                                                >
+                                                    <FiTrash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -692,7 +702,7 @@ const OrderManagement = () => {
                             <h3>Historial del Pedido</h3>
                             <OrderTimeline 
                                 order={selectedOrder} 
-                                isAdmin={true} 
+                                isAdmin={isAdmin || user?.role === 'operador'} 
                                 onUpdate={() => handleViewOrder(selectedOrder.id)} 
                             />
                         </div>

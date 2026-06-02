@@ -11,7 +11,7 @@ DROP TYPE IF EXISTS user_role CASCADE;
 DROP TYPE IF EXISTS order_status CASCADE;
 
 -- Create ENUMs for user roles and order statuses
-CREATE TYPE user_role AS ENUM ('admin', 'cliente');
+CREATE TYPE user_role AS ENUM ('admin', 'cliente', 'operador');
 CREATE TYPE order_status AS ENUM (
   'diseno_realizado',
   'preprensa',

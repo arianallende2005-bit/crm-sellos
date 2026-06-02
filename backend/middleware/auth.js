@@ -61,6 +61,27 @@ const requireAdmin = (req, res, next) => {
 };
 
 /**
+ * Middleware to require admin or operator role
+ */
+const requireAdminOrOperator = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({
+            success: false,
+            message: 'No autenticado.'
+        });
+    }
+
+    if (req.user.role !== 'admin' && req.user.role !== 'operador') {
+        return res.status(403).json({
+            success: false,
+            message: 'Acceso denegado. Se requieren privilegios de administrador o de operador.'
+        });
+    }
+
+    next();
+};
+
+/**
  * Middleware to require authentication (any role)
  */
 const requireAuth = (req, res, next) => {
@@ -77,5 +98,6 @@ const requireAuth = (req, res, next) => {
 module.exports = {
     verifyToken,
     requireAdmin,
+    requireAdminOrOperator,
     requireAuth
 };
