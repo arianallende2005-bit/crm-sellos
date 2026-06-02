@@ -36,6 +36,7 @@ const OrderManagement = () => {
         id: '',
         product_name: '',
         delivery_date: '',
+        created_at: '',
         image: null
     });
     const [searchTerm, setSearchTerm] = useState('');
@@ -195,6 +196,7 @@ const OrderManagement = () => {
             id: order.id,
             product_name: order.product_name,
             delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : '',
+            created_at: order.created_at ? new Date(order.created_at).toISOString().split('T')[0] : '',
             image: null
         });
         setShowEditModal(true);
@@ -209,6 +211,9 @@ const OrderManagement = () => {
                 data.append('delivery_date', editFormData.delivery_date);
             } else {
                 data.append('delivery_date', ''); // Clear if empty
+            }
+            if (editFormData.created_at) {
+                data.append('created_at', editFormData.created_at);
             }
             if (editFormData.image) {
                 data.append('image', editFormData.image);
@@ -627,6 +632,16 @@ const OrderManagement = () => {
                                     className="input"
                                     value={editFormData.delivery_date}
                                     onChange={e => setEditFormData({ ...editFormData, delivery_date: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="label">Fecha de creación</label>
+                                <input
+                                    type="date"
+                                    className="input"
+                                    value={editFormData.created_at}
+                                    onChange={e => setEditFormData({ ...editFormData, created_at: e.target.value })}
                                 />
                             </div>
 

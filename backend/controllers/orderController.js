@@ -489,7 +489,7 @@ const updateOrderPriority = async (req, res) => {
 const updateOrder = async (req, res) => {
     try {
         const { id } = req.params;
-        const { product_name, nro_remito, delivery_date } = req.body;
+        const { product_name, nro_remito, delivery_date, created_at } = req.body;
 
         let imagePath = null;
 
@@ -568,6 +568,12 @@ const updateOrder = async (req, res) => {
         if (delivery_date !== undefined) {
             updateFields.push(`delivery_date = $${paramIndex}`);
             params.push(delivery_date === '' ? null : delivery_date);
+            paramIndex++;
+        }
+        
+        if (created_at !== undefined) {
+            updateFields.push(`created_at = $${paramIndex}`);
+            params.push(created_at === '' ? null : created_at);
             paramIndex++;
         }
 
