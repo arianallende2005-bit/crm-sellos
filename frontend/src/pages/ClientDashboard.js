@@ -125,7 +125,7 @@ const ClientDashboard = () => {
                                 className={`${styles.filterTab} ${filter === 'archived' ? styles.active : ''}`}
                                 onClick={() => setFilter('archived')}
                             >
-                                Archivados ({orders.filter(o => o.is_archived).length})
+                                Entregados ({orders.filter(o => o.is_archived).length})
                             </button>
                         </div>
 

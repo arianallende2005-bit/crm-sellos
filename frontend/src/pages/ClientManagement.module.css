@@ -148,3 +148,18 @@
     font-size: 0.875rem;
     margin-bottom: var(--spacing-lg);
 }
+
+.closeBtn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-400);
+    transition: var(--transition);
+    line-height: 1;
+    padding: 0.25rem;
+}
+
+.closeBtn:hover {
+    color: var(--gray-700);
+}

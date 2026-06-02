@@ -72,6 +72,8 @@ const OrderManagement = () => {
                         }
                         return remitoB.localeCompare(remitoA);
                     });
+                } else if (filter === 'all') {
+                    fetchedOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 }
                 setOrders(fetchedOrders);
             }

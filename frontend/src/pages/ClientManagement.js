@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usersAPI } from '../services/api';
-import { FiArrowLeft, FiUserPlus, FiEdit2, FiKey, FiToggleLeft, FiToggleRight, FiTrash2 } from 'react-icons/fi';
+import { usersAPI, ordersAPI } from '../services/api';
+import { FiArrowLeft, FiUserPlus, FiEdit2, FiKey, FiToggleLeft, FiToggleRight, FiTrash2, FiList, FiDownload } from 'react-icons/fi';
+import StatusBadge from '../components/StatusBadge';
 import styles from './ClientManagement.module.css';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ClientManagement = () => {
     const navigate = useNavigate();
@@ -19,10 +22,103 @@ const ClientManagement = () => {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordClientId, setPasswordClientId] = useState(null);
     const [newPasswordInput, setNewPasswordInput] = useState('');
+    const [selectedClientForJobs, setSelectedClientForJobs] = useState(null);
+    const [clientOrders, setClientOrders] = useState([]);
+    const [filteredOrders, setFilteredOrders] = useState([]);
+    const [selectedMonth, setSelectedMonth] = useState('');
 
     useEffect(() => {
         fetchClients();
     }, []);
+
+    useEffect(() => {
+        if (!selectedMonth) {
+            setFilteredOrders(clientOrders);
+        } else {
+            const [year, month] = selectedMonth.split('-');
+            const filtered = clientOrders.filter(order => {
+                const date = new Date(order.created_at);
+                const orderYear = date.getFullYear().toString();
+                const orderMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+                return orderYear === year && orderMonth === month;
+            });
+            setFilteredOrders(filtered);
+        }
+    }, [selectedMonth, clientOrders]);
+
+    const handleViewJobs = async (client) => {
+        setSelectedClientForJobs(client);
+        setSelectedMonth(''); 
+        try {
+            const response = await ordersAPI.getAll({ client_id: client.id, show_archived: 'all' });
+            if (response.data.success) {
+                setClientOrders(response.data.orders);
+                setFilteredOrders(response.data.orders);
+            }
+        } catch (error) {
+            console.error('Error fetching client jobs:', error);
+            alert('Error al obtener los trabajos del cliente.');
+        }
+    };
+
+    const handleDownloadJobsPDF = () => {
+        if (filteredOrders.length === 0) {
+            alert('No hay trabajos para exportar en este mes.');
+            return;
+        }
+
+        const doc = new jsPDF();
+        
+        let monthTitle = "Todos los meses";
+        if (selectedMonth) {
+            const [year, month] = selectedMonth.split('-');
+            const monthNames = [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ];
+            monthTitle = `${monthNames[parseInt(month) - 1]} de ${year}`;
+        }
+
+        doc.setFontSize(16);
+        doc.text(`Reporte de Trabajos - ${selectedClientForJobs.full_name}`, 14, 15);
+        doc.setFontSize(12);
+        doc.text(`Período: ${monthTitle}`, 14, 22);
+
+        const tableColumn = ["Pedido #", "Producto", "Estado", "Nro. Remito", "Fecha Creación", "Fecha Entrega"];
+        const tableRows = [];
+
+        const statusTranslations = {
+            'diseno_realizado': 'Diseño',
+            'preprensa': 'Preprensa',
+            'procesado_fotopolimero': 'Fotopolímero',
+            'montaje': 'Montaje',
+            'listo_entrega': 'Remito',
+            'entregado': 'Entregado'
+        };
+
+        filteredOrders.forEach(order => {
+            const orderData = [
+                `#${order.id}`,
+                order.product_name,
+                statusTranslations[order.current_status] || order.current_status,
+                order.nro_remito || '-',
+                new Date(order.created_at).toLocaleDateString('es-ES'),
+                order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'
+            ];
+            tableRows.push(orderData);
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 28,
+            theme: 'striped',
+            headStyles: { fillColor: [79, 70, 229] } // Indigo header
+        });
+
+        const fileName = `trabajos_${selectedClientForJobs.username}_${selectedMonth || 'todos'}.pdf`;
+        doc.save(fileName);
+    };
 
     const fetchClients = async () => {
         try {
@@ -164,6 +260,14 @@ const ClientManagement = () => {
                                     <td>
                                         <div className={styles.actions}>
                                             <button
+                                                onClick={() => handleViewJobs(client)}
+                                                className={styles.actionBtn}
+                                                title="Ver trabajos del cliente"
+                                                style={{ color: 'var(--primary)' }}
+                                            >
+                                                <FiList size={16} />
+                                            </button>
+                                            <button
                                                 onClick={() => openEditModal(client)}
                                                 className={styles.actionBtn}
                                                 title="Editar"
@@ -299,6 +403,96 @@ const ClientManagement = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            {/* Client Jobs Modal */}
+            {selectedClientForJobs && (
+                <div className={styles.modal} onClick={() => setSelectedClientForJobs(null)}>
+                    <div className={styles.modalContent} style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div>
+                                <h2>Trabajos de {selectedClientForJobs.full_name}</h2>
+                                <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', margin: 0 }}>
+                                    Usuario: @{selectedClientForJobs.username}
+                                </p>
+                            </div>
+                            <button onClick={() => setSelectedClientForJobs(null)} className={styles.closeBtn}>×</button>
+                        </div>
+
+                        {/* Month Filter and Export Buttons */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <label className="label" style={{ margin: 0 }}>Filtrar por Mes:</label>
+                                <input
+                                    type="month"
+                                    className="input"
+                                    style={{ padding: '6px 12px', width: '180px' }}
+                                    value={selectedMonth}
+                                    onChange={e => setSelectedMonth(e.target.value)}
+                                />
+                                {selectedMonth && (
+                                    <button 
+                                        onClick={() => setSelectedMonth('')} 
+                                        className="btn btn-secondary btn-sm"
+                                        style={{ padding: '6px 12px' }}
+                                    >
+                                        Limpiar
+                                    </button>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleDownloadJobsPDF}
+                                className="btn btn-primary"
+                                disabled={filteredOrders.length === 0}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                            >
+                                <FiDownload size={16} />
+                                Descargar PDF
+                            </button>
+                        </div>
+
+                        {/* Jobs Table */}
+                        <div className={styles.tableContainer} style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Pedido #</th>
+                                        <th>Producto</th>
+                                        <th>Estado</th>
+                                        <th>Nro. Remito</th>
+                                        <th>Fecha Creación</th>
+                                        <th>Fecha Entrega</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredOrders.map(order => (
+                                        <tr key={order.id}>
+                                            <td><strong>#{order.id}</strong></td>
+                                            <td>{order.product_name}</td>
+                                            <td>
+                                                <StatusBadge status={order.current_status} />
+                                            </td>
+                                            <td>{order.nro_remito || '-'}</td>
+                                            <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
+                                            <td>{order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            {filteredOrders.length === 0 && (
+                                <div className={styles.emptyState} style={{ padding: '2rem' }}>
+                                    <p>No hay trabajos registrados en este período.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className={styles.modalActions} style={{ marginTop: '1.5rem' }}>
+                            <button onClick={() => setSelectedClientForJobs(null)} className="btn btn-secondary">
+                                Cerrar
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
