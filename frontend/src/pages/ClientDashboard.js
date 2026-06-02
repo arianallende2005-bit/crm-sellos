@@ -59,6 +59,9 @@ const ClientDashboard = () => {
             );
         }
 
+        // Sort by creation date descending (most recent first)
+        result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
         setFilteredOrders(result);
     };
 
