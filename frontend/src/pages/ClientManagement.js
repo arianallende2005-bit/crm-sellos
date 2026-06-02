@@ -405,6 +405,7 @@ const ClientManagement = () => {
                         </form>
                     </div>
                 </div>
+            )}
             {/* Client Jobs Modal */}
             {selectedClientForJobs && (
                 <div className={styles.modal} onClick={() => setSelectedClientForJobs(null)}>
