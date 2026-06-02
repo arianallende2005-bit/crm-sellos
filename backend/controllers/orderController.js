@@ -171,7 +171,7 @@ const createOrder = async (req, res) => {
             });
         }
 
-        let imagePath = null;
+        let imagePath = 'https://otuorchtbfodduxtxrtg.supabase.co/storage/v1/object/public/images/orders/placeholder.png';
 
         // Process uploaded image if present
         if (req.file) {

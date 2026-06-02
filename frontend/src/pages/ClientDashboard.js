@@ -183,7 +183,7 @@ const ClientDashboard = () => {
                                                 alt={order.product_name} 
                                                 onError={(e) => {
                                                     e.target.onerror = null;
-                                                    e.target.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
+                                                    e.target.src = '/placeholder.png';
                                                 }}
                                             />
                                         </div>
@@ -232,7 +232,7 @@ const ClientDashboard = () => {
                                                             className={styles.thumbnail}
                                                             onError={(e) => {
                                                                 e.target.onerror = null;
-                                                                e.target.src = 'https://placehold.co/600x400?text=Sello';
+                                                                e.target.src = '/placeholder.png';
                                                             }}
                                                         />
                                                     )}
@@ -285,7 +285,7 @@ const ClientDashboard = () => {
                                         alt={selectedOrder.product_name} 
                                         onError={(e) => {
                                             e.target.onerror = null;
-                                            e.target.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
+                                            e.target.src = '/placeholder.png';
                                         }}
                                     />
                                     <div className={styles.imageActions}>

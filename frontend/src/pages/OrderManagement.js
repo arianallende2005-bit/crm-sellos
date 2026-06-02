@@ -696,7 +696,7 @@ const OrderManagement = () => {
                                         alt={selectedOrder.product_name} 
                                         onError={(e) => {
                                             e.target.onerror = null;
-                                            e.target.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
+                                            e.target.src = '/placeholder.png';
                                         }}
                                     />
                                 </div>
