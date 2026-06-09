@@ -15,7 +15,8 @@ const getAllOrders = async (req, res) => {
         const userRole = req.user.role;
 
         let query = `
-      SELECT o.*, u.full_name as client_name, u.username as client_username
+      SELECT o.*, u.full_name as client_name, u.username as client_username,
+             (o.delivery_date IS NOT NULL AND o.delivery_date < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Argentina/Buenos_Aires')::date AND o.current_status NOT IN ('listo_entrega', 'entregado') AND o.is_archived = false) as is_overdue
       FROM orders o
       JOIN users u ON o.client_id = u.id
       WHERE 1=1
@@ -59,8 +60,8 @@ const getAllOrders = async (req, res) => {
             paramIndex++;
         }
 
-        // Order: priority first (nulls last), then by delivery_date, then by creation date
-        query += ` ORDER BY o.priority_order ASC NULLS LAST, o.delivery_date ASC NULLS LAST, o.created_at DESC`;
+        // Order: overdue first, then priority first (nulls last), then by delivery_date, then by creation date
+        query += ` ORDER BY is_overdue DESC, o.priority_order ASC NULLS LAST, o.delivery_date ASC NULLS LAST, o.created_at DESC`;
 
         const result = await pool.query(query, params);
 
@@ -90,7 +91,8 @@ const getOrderById = async (req, res) => {
 
         // Get order details
         let orderQuery = `
-      SELECT o.*, u.full_name as client_name, u.username as client_username
+      SELECT o.*, u.full_name as client_name, u.username as client_username,
+             (o.delivery_date IS NOT NULL AND o.delivery_date < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Argentina/Buenos_Aires')::date AND o.current_status NOT IN ('listo_entrega', 'entregado') AND o.is_archived = false) as is_overdue
       FROM orders o
       JOIN users u ON o.client_id = u.id
       WHERE o.id = $1

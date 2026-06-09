@@ -77,7 +77,11 @@ const OrderManagement = () => {
                         return remitoB.localeCompare(remitoA);
                     });
                 } else if (filter === 'all') {
-                    fetchedOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    fetchedOrders.sort((a, b) => {
+                        if (a.is_overdue && !b.is_overdue) return -1;
+                        if (!a.is_overdue && b.is_overdue) return 1;
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    });
                 }
                 setOrders(fetchedOrders);
             }
@@ -347,7 +351,7 @@ const OrderManagement = () => {
                             className={`btn ${filter === 'archived' ? 'btn-primary' : 'btn-secondary'}`}
                             onClick={() => setFilter('archived')}
                         >
-                            Archivados
+                            Entregados
                         </button>
                         <button
                             className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
@@ -398,7 +402,7 @@ const OrderManagement = () => {
                                             disabled={!isAdmin}
                                         />
                                     </td>
-                                    <td><strong>{order.product_name}</strong></td>
+                                    <td><strong style={order.is_overdue ? { textDecoration: 'underline', textDecorationColor: '#f97316', textDecorationThickness: '2px' } : {}}>{order.product_name}</strong></td>
                                     <td>{order.client_name}</td>
                                     <td><StatusBadge status={order.current_status} /></td>
                                     <td>{order.nro_remito || '-'}</td>
