@@ -102,7 +102,7 @@ const ClientManagement = () => {
                 order.product_name,
                 statusTranslations[order.current_status] || order.current_status,
                 order.nro_remito || '-',
-                new Date(order.created_at).toLocaleDateString('es-ES'),
+                order.created_at ? order.created_at.split('T')[0].split('-').reverse().join('/') : '-',
                 order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'
             ];
             tableRows.push(orderData);
@@ -256,7 +256,7 @@ const ClientManagement = () => {
                                             {client.is_active ? 'Activo' : 'Inactivo'}
                                         </span>
                                     </td>
-                                    <td>{new Date(client.created_at).toLocaleDateString('es-ES')}</td>
+                                    <td>{client.created_at ? client.created_at.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                     <td>
                                         <div className={styles.actions}>
                                             <button
@@ -475,7 +475,7 @@ const ClientManagement = () => {
                                                 <StatusBadge status={order.current_status} />
                                             </td>
                                             <td>{order.nro_remito || '-'}</td>
-                                            <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
+                                            <td>{order.created_at ? order.created_at.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                             <td>{order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                         </tr>
                                     ))}

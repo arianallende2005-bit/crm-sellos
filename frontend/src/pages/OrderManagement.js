@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ordersAPI, usersAPI, STATIC_URL } from '../services/api';
-import { FiArrowLeft, FiPlus, FiUpload, FiTrash2, FiSearch, FiDownload, FiArchive, FiEdit2, FiEye, FiCheckSquare } from 'react-icons/fi';
+import { FiArrowLeft, FiPlus, FiUpload, FiTrash2, FiSearch, FiDownload, FiArchive, FiEdit2, FiEye, FiCheckSquare, FiAlertCircle } from 'react-icons/fi';
 import StatusBadge from '../components/StatusBadge';
 import OrderTimeline from '../components/OrderTimeline';
 import styles from './OrderManagement.module.css';
@@ -191,12 +191,28 @@ const OrderManagement = () => {
         }
     };
 
+    const handleToggleUrgent = async (order) => {
+        try {
+            const newUrgentStatus = !order.is_urgent;
+            await ordersAPI.toggleUrgent(order.id, newUrgentStatus);
+            fetchOrders();
+        } catch (error) {
+            alert('Error al cambiar la urgencia del pedido');
+        }
+    };
+
     const openEditModal = (order) => {
+        let localDateStr = '';
+        if (order.created_at) {
+            const dateObj = new Date(order.created_at);
+            localDateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        }
+
         setEditFormData({
             id: order.id,
             product_name: order.product_name,
             delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : '',
-            created_at: order.created_at ? new Date(order.created_at).toISOString().split('T')[0] : '',
+            created_at: localDateStr,
             image: null
         });
         setShowEditModal(true);
@@ -213,7 +229,7 @@ const OrderManagement = () => {
                 data.append('delivery_date', ''); // Clear if empty
             }
             if (editFormData.created_at) {
-                data.append('created_at', editFormData.created_at);
+                data.append('created_at', editFormData.created_at + 'T12:00:00Z');
             }
             if (editFormData.image) {
                 data.append('image', editFormData.image);
@@ -265,7 +281,7 @@ const OrderManagement = () => {
                 order.client_name,
                 order.current_status,
                 order.nro_remito || '-',
-                new Date(order.created_at).toLocaleDateString('es-ES'),
+                order.created_at ? order.created_at.split('T')[0].split('-').reverse().join('/') : '-',
                 order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'
             ];
             tableRows.push(orderData);
@@ -369,7 +385,7 @@ const OrderManagement = () => {
                         </thead>
                         <tbody>
                             {orders.map(order => (
-                                <tr key={order.id}>
+                                <tr key={order.id} style={{ backgroundColor: order.is_urgent ? 'rgba(255, 0, 0, 0.05)' : 'inherit' }}>
                                     <td style={{ textAlign: 'center' }}>
                                         <input
                                             type="number"
@@ -385,10 +401,8 @@ const OrderManagement = () => {
                                     <td><strong>{order.product_name}</strong></td>
                                     <td>{order.client_name}</td>
                                     <td><StatusBadge status={order.current_status} /></td>
-                                    <td>
-                                        {order.nro_remito || '-'}
-                                    </td>
-                                    <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
+                                    <td>{order.nro_remito || '-'}</td>
+                                    <td>{order.created_at ? order.created_at.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                     <td>{order.delivery_date ? order.delivery_date.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                     <td>
                                         <div className={styles.actions}>
@@ -414,6 +428,17 @@ const OrderManagement = () => {
                                                 title="Actualizar Estado"
                                             >
                                                 <FiCheckSquare size={16} />
+                                            </button>
+                                            <button
+                                                className={styles.actionBtn}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleToggleUrgent(order);
+                                                }}
+                                                title={order.is_urgent ? "Quitar Urgencia" : "Marcar como Urgente"}
+                                                style={{ color: order.is_urgent ? 'red' : 'inherit' }}
+                                            >
+                                                <FiAlertCircle size={16} />
                                             </button>
                                             <button
                                                 className={styles.actionBtn}

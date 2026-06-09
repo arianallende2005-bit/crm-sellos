@@ -28,6 +28,9 @@ router.put('/:id/priority', requireAdmin, orderController.updateOrderPriority);
 // Toggle archive status (admin or operator)
 router.put('/:id/archive', requireAdminOrOperator, orderController.toggleArchiveStatus);
 
+// Toggle urgent status (admin or operator)
+router.put('/:id/urgent', requireAdminOrOperator, orderController.toggleUrgentStatus);
+
 // Update order details (admin only, with optional image upload)
 router.put('/:id', requireAdmin, upload.single('image'), handleUploadError, orderController.updateOrder);
 

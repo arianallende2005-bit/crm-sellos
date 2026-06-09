@@ -274,7 +274,7 @@ const AdminDashboard = () => {
                                         <td>
                                             <StatusBadge status={order.current_status} />
                                         </td>
-                                        <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
+                                        <td>{order.created_at ? order.created_at.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -846,6 +846,42 @@ const updateOrCreateHistoryNotes = async (req, res) => {
     }
 };
 
+/**
+ * Toggle urgent status
+ * PUT /api/orders/:id/urgent
+ */
+const toggleUrgentStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { is_urgent } = req.body;
+
+        const result = await pool.query(
+            'UPDATE orders SET is_urgent = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+            [is_urgent, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Pedido no encontrado.'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Estado de urgencia actualizado exitosamente.',
+            order: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Toggle urgent error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al cambiar estado de urgencia.'
+        });
+    }
+};
+
 module.exports = {
     getAllOrders,
     getOrderById,
@@ -856,6 +892,7 @@ module.exports = {
     getOrderStats,
     deleteOrder,
     toggleArchiveStatus,
+    toggleUrgentStatus,
     updateHistoryNotes,
     updateOrCreateHistoryNotes
 };

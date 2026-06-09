@@ -79,6 +79,7 @@ export const ordersAPI = {
     updateHistoryNotes: (orderId, status, notes) => api.put(`/orders/${orderId}/history/${status}/notes`, { notes }),
     updatePriority: (id, priority_order) => api.put(`/orders/${id}/priority`, { priority_order }),
     toggleArchive: (id, is_archived) => api.put(`/orders/${id}/archive`, { is_archived }),
+    toggleUrgent: (id, is_urgent) => api.put(`/orders/${id}/urgent`, { is_urgent }),
     getStats: () => api.get('/orders/stats'),
     delete: (id) => api.delete(`/orders/${id}`),
 };
