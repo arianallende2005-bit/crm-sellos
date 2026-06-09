@@ -60,8 +60,8 @@ const getAllOrders = async (req, res) => {
             paramIndex++;
         }
 
-        // Order: overdue first, then priority first (nulls last), then by delivery_date, then by creation date
-        query += ` ORDER BY is_overdue DESC, o.priority_order ASC NULLS LAST, o.delivery_date ASC NULLS LAST, o.created_at DESC`;
+        // Order: priority first (nulls last), then urgent first, then overdue first, then by delivery_date, then by creation date
+        query += ` ORDER BY o.priority_order ASC NULLS LAST, o.is_urgent DESC, is_overdue DESC, o.delivery_date ASC NULLS LAST, o.created_at DESC`;
 
         const result = await pool.query(query, params);
 

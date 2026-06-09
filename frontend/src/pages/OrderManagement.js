@@ -78,8 +78,16 @@ const OrderManagement = () => {
                     });
                 } else if (filter === 'all') {
                     fetchedOrders.sort((a, b) => {
+                        const pA = a.priority_order === null || a.priority_order === undefined ? Infinity : parseInt(a.priority_order, 10);
+                        const pB = b.priority_order === null || b.priority_order === undefined ? Infinity : parseInt(b.priority_order, 10);
+                        if (pA !== pB) return pA - pB;
+
+                        if (a.is_urgent && !b.is_urgent) return -1;
+                        if (!a.is_urgent && b.is_urgent) return 1;
+
                         if (a.is_overdue && !b.is_overdue) return -1;
                         if (!a.is_overdue && b.is_overdue) return 1;
+
                         return new Date(b.created_at) - new Date(a.created_at);
                     });
                 }
@@ -389,7 +397,7 @@ const OrderManagement = () => {
                         </thead>
                         <tbody>
                             {orders.map(order => (
-                                <tr key={order.id} style={{ backgroundColor: order.is_urgent ? 'rgba(255, 0, 0, 0.05)' : 'inherit' }}>
+                                <tr key={order.id} style={{ backgroundColor: order.is_urgent ? 'rgba(255, 0, 0, 0.05)' : (order.is_overdue ? 'rgba(14, 165, 233, 0.08)' : 'inherit') }}>
                                     <td style={{ textAlign: 'center' }}>
                                         <input
                                             type="number"
@@ -402,7 +410,7 @@ const OrderManagement = () => {
                                             disabled={!isAdmin}
                                         />
                                     </td>
-                                    <td><strong style={order.is_overdue ? { textDecoration: 'underline', textDecorationColor: '#f97316', textDecorationThickness: '2px' } : {}}>{order.product_name}</strong></td>
+                                    <td><strong>{order.product_name}</strong></td>
                                     <td>{order.client_name}</td>
                                     <td><StatusBadge status={order.current_status} /></td>
                                     <td>{order.nro_remito || '-'}</td>
